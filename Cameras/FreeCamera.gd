@@ -12,7 +12,9 @@ class_name FreeCamera
 ## Multiplier applied to look_input when being added to angle
 @export var look_sensitivity = 1.0
 ## The max linear speed of the camera
-@export var speed : float = 5.0
+@export var speed: float = 5.0
+## Show camera information
+@export var debug: bool = false
 ## Stores the input received from the mouse or from the following inputs if they are set:
 ## "look_hor_neg", "look_hor_pos", "look_ver_neg", "look_ver_pos"
 var look_input = Vector2()
@@ -37,14 +39,16 @@ func _physics_process(delta):
 	if (limit_angle):
 		angle = Vector3(min(max(angle.x, min_angle.x), max_angle.x), min(max(angle.y, min_angle.y), max_angle.y), min(max(angle.z, min_angle.z), max_angle.z))
 	var angle_rad = Vector3(deg_to_rad(angle.x), deg_to_rad(angle.y), deg_to_rad(angle.z))
-	# DebugDraw.set_text("CamAngle", angle)
+	if debug:
+		DebugDraw.set_text("CamAngle", angle)
 	var rot = (Quaternion(Vector3.UP, angle_rad.y) * Quaternion(Vector3.RIGHT, angle_rad.x)) * Quaternion(Vector3.BACK, angle_rad.z)
 	
 	global_transform.basis = Basis(rot)
 	global_transform.origin = global_transform.origin + NodeHelpers.get_global_forward(self) * (move_input.y * speed * delta) + NodeHelpers.get_global_right(self) * (move_input.x * speed * delta) + NodeHelpers.get_global_up(self) * (move_lat_input * speed * delta)
-	# DebugDraw.set_text("CamPos", global_transform.origin)
+	if debug:
+		DebugDraw.set_text("CamPos", global_transform.origin)
 	
-	look_input = Input.get_vector("look_hor_neg", "look_hor_pos", "look_ver_neg", "look_ver_pos"); # needs to be at the end since I also want mouse input to affect the camera
+	look_input = Input.get_vector("look_hor_neg", "look_hor_pos", "look_ver_neg", "look_ver_pos") # needs to be at the end since I also want mouse input to affect the camera
 	look_input = Vector2(-look_input.x, look_input.y)
-	move_input = Input.get_vector("move_hor_neg", "move_hor_pos", "move_ver_neg", "move_ver_pos");
+	move_input = Input.get_vector("move_hor_neg", "move_hor_pos", "move_ver_neg", "move_ver_pos")
 	move_lat_input = Input.get_axis("move_lat_neg", "move_lat_pos")
