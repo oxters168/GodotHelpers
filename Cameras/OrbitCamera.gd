@@ -19,6 +19,10 @@ class_name OrbitCamera
 @export var offset_locally: bool = false
 ## If set to true then the camera will collide with other physics bodies
 @export var abide_to_physics: bool = false
+## How much to move to the final position each frame. The value 1 would mean move
+## to the final position, 0.5 would mean go halfway each frame, and 0 would mean
+## do not move at all (therefore it is excluded).
+@export_range (0.001, 1) var linear_lerp: float = 0.1
 ## The target to orbit
 @export var target: Node3D
 ## Show camera information
@@ -81,7 +85,7 @@ func _physics_process(_delta):
 			final_pos = origin + cam_dir * max(decreased_dist - frustum_push_dist, 0)
 	
 	global_transform.basis = Basis(rot)
-	global_transform.origin = final_pos
+	global_transform.origin = lerp(global_transform.origin, final_pos, linear_lerp)
 
 	input_vector = Input.get_vector("look_hor_neg", "look_hor_pos", "look_ver_neg", "look_ver_pos"); # needs to be at the end since I also want mouse input to affect the camera
 	input_vector = Vector2(-input_vector.x, input_vector.y)
