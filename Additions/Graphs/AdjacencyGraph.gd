@@ -43,3 +43,29 @@ func get_adjacent_verts(vert_index: int) -> Array[int]:
 func get_edge_weight(vert1: int, vert2: int) -> int:
 	assert(vert1 < _num_vertices && vert2 < _num_vertices && vert1 >= 0 && vert2 >= 0, "Vertices are out of bounds")
 	return _matrix[vert1][vert2]
+
+## Returns a bi-directional adjacency graph with the given size where every vertex is guaranteed to be reachable from any other vertex
+## and the most number of connections per vertex is limited based on the given value
+static func create_rand(vert_count: int, conn_max: int = 9223372036854775807):
+	var graph = AdjacencyGraph.new(vert_count)
+	var verts_traversed: Array[int] = [0]
+	while verts_traversed.size() < vert_count:
+		var start_candidates: Array[int] = []
+		for vert in verts_traversed:
+			if graph.get_adjacent_verts(vert).size() < conn_max:
+				start_candidates.append(vert)
+		var start_vert = start_candidates[randi_range(0, start_candidates.size() - 1)]
+		var end_candidates: Array[int] = []
+		for vert in vert_count:
+			var adj_verts = graph.get_adjacent_verts(vert)
+			# if end point is not the same as the start point
+			# if end point has not reached max connections
+			# if end point is not already connected to start point
+			# if end point has already been traversed then make sure this is not our last connection so we do not close the loop
+			if vert != start_vert && adj_verts.size() < conn_max && !adj_verts.has(start_vert) && (!verts_traversed.has(vert) || (conn_max - graph.get_adjacent_verts(start_vert).size()) > 1):
+				end_candidates.append(vert)
+		var end_vert = end_candidates[randi_range(0, end_candidates.size() - 1)]
+		graph.add_edge(start_vert, end_vert)
+		if !verts_traversed.has(end_vert):
+			verts_traversed.append(end_vert)
+	return graph
