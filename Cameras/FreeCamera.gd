@@ -1,6 +1,8 @@
 extends Camera3D
 class_name FreeCamera
 
+## Should mouse input control the camera orientation
+@export var mouse_input: bool = false
 ## Current angle of camera on each axis in degrees
 @export var angle = Vector3()
 ## Whether to limit the camera angles between a min and max value
@@ -25,11 +27,12 @@ var move_input = Vector2()
 ## "move_lat_neg", "move_lat_pos"
 var move_lat_input: float = 0
 
-func _ready():
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED)
+func _init(init_angle: Vector3 = Vector3.ZERO, init_pos: Vector3 = Vector3.ZERO):
+	angle = init_angle
+	position = init_pos
 
 func _input(event):
-	if event is InputEventMouseMotion:
+	if mouse_input && event is InputEventMouseMotion:
 		var mouse_diff = -event.relative
 		look_input = VectorHelpers.normalize_input(look_input + mouse_diff)
 

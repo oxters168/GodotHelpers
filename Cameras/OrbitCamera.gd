@@ -1,15 +1,17 @@
 extends Camera3D
 class_name OrbitCamera
 
+## Should mouse input control the camera orientation
+@export var mouse_input: bool = false
 ## Distance between camera and target
 @export var distance: float = 5.0
 ## Current angle of camera on each axis in degrees
 @export var angle: Vector3 = Vector3()
 ## Whether to limit the camera angles between a min and max value
 @export var limit_angle: bool = false
-## The minimum angle value of each axis, only works if limit_angle is set to true
+## The minimum angle in degrees value of each axis, only works if limit_angle is set to true
 @export var min_angle: Vector3 = Vector3.ONE * -360
-## The maximum angle value of each axis, only works if limit_angle is set to true
+## The maximum angle in degrees value of each axis, only works if limit_angle is set to true
 @export var max_angle: Vector3 = Vector3.ONE * 360
 ## Multiplier applied to look_input when being added to angle
 @export var look_sensitivity: float = 1.0
@@ -22,7 +24,7 @@ class_name OrbitCamera
 ## How much to move to the final position each frame. The value 1 would mean move
 ## to the final position, 0.5 would mean go halfway each frame, and 0 would mean
 ## do not move at all (therefore it is excluded).
-@export_range (0.001, 1) var linear_lerp: float = 0.1
+@export_range (0.001, 1) var linear_lerp: float = 1
 ## The target to orbit
 @export var target: Node3D
 ## Show camera information
@@ -31,14 +33,12 @@ class_name OrbitCamera
 ## "look_hor_neg", "look_hor_pos", "look_ver_neg", "look_ver_pos"
 var input_vector: Vector2 = Vector2()
 
-func _ready():
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED) # sets the mouse to be hidden and confined to the window
-
-func block_mouse_input(enabled: bool):
-	Input.set_mouse_mode(Input.MOUSE_MODE_CAPTURED if enabled else Input.MOUSE_MODE_VISIBLE)
+func _init(init_angle: Vector3 = Vector3.ZERO, init_pos: Vector3 = Vector3.ZERO):
+	angle = init_angle
+	position = init_pos
 
 func _input(event):
-	if event is InputEventMouseMotion:
+	if mouse_input && event is InputEventMouseMotion:
 		var mouse_diff = -event.relative
 		input_vector = VectorHelpers.normalize_input(input_vector + mouse_diff)
 
@@ -89,3 +89,14 @@ func _physics_process(_delta):
 
 	input_vector = Input.get_vector("look_hor_neg", "look_hor_pos", "look_ver_neg", "look_ver_pos"); # needs to be at the end since I also want mouse input to affect the camera
 	input_vector = Vector2(-input_vector.x, input_vector.y)
+
+## Set the angle limits of the camera, the given values should be in degrees
+func set_angle_limit(angle_min: Vector3, angle_max: Vector3):
+	limit_angle = true
+	min_angle = angle_min
+	max_angle = angle_max
+## Unset any angle limits that were set previously on the camera
+func unset_angle_limit():
+	limit_angle = false
+	min_angle = Vector3.ONE * -360
+	max_angle = Vector3.ONE * -360
