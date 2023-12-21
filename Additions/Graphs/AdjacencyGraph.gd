@@ -5,6 +5,7 @@ extends GraphBase
 class_name AdjacencyGraph
 
 var _matrix = []
+const INT64_MAX: int = 9223372036854775807
 
 ## Creates a new directed or undirected graph object, based on the given parameter, that has the given number of vertices.
 ## A directed graph would be one that can have directional edges and an undirected graph would be one that has bi-directional edges.
@@ -46,7 +47,7 @@ func get_edge_weight(vert1: int, vert2: int) -> int:
 
 ## Returns a bi-directional adjacency graph with the given size where every vertex is guaranteed to be reachable from any other vertex
 ## and the most number of connections per vertex is limited based on the given value
-static func create_rand(vert_count: int, conn_max: int = 9223372036854775807):
+static func create_rand(vert_count: int, conn_max: int = INT64_MAX):
 	var graph = AdjacencyGraph.new(vert_count)
 	var verts_traversed: Array[int] = [0]
 	while verts_traversed.size() < vert_count:
@@ -69,3 +70,42 @@ static func create_rand(vert_count: int, conn_max: int = 9223372036854775807):
 		if !verts_traversed.has(end_vert):
 			verts_traversed.append(end_vert)
 	return graph
+
+## Returns an array of verts (including from and to) that represents the shortest path between the given verts.
+## Source: https://en.wikipedia.org/wiki/Dijkstra%27s_algorithm#Pseudocode
+func get_shortest_path(from: int, to: int):
+	var min_dists: Array[int] = []
+	var prev_verts: Array[int] = []
+	var unvisited_verts: Array[int] = []
+	min_dists.resize(_num_vertices)
+	prev_verts.resize(_num_vertices)
+	for vert in _num_vertices:
+		min_dists[vert] = INT64_MAX
+		prev_verts[vert] = -1
+		unvisited_verts.append(vert)
+	min_dists[from] = 0
+
+	while !unvisited_verts.is_empty():
+		var unvisited_vert = -1
+		var min_dist = INT64_MAX
+		for q in unvisited_verts:
+			if min_dists[q] < min_dist:
+				min_dist = min_dists[q]
+				unvisited_vert = q
+		unvisited_verts.erase(unvisited_vert)
+
+		for vert in get_adjacent_verts(unvisited_vert):
+			if unvisited_verts.has(vert):
+				var alt = min_dists[unvisited_vert] + get_edge_weight(unvisited_vert, vert)
+				if alt < min_dists[vert]:
+					min_dists[vert] = alt
+					prev_verts[vert] = unvisited_vert
+		if unvisited_vert == to:
+			break
+	
+	var current_vert: int = to
+	var shortest_path: Array[int] = [current_vert]
+	while current_vert >= 0 && current_vert != from:
+		shortest_path.push_front(prev_verts[current_vert])
+		current_vert = prev_verts[current_vert]
+	return shortest_path
