@@ -12,12 +12,27 @@ const INT64_MAX: int = 9223372036854775807
 func _init(num_vertices: int, directed: bool = false):
 	super(num_vertices, directed)
 	_fill_empty_matrix()
-
+## Fills the adjacency matrix with the appropriate amount of zeros
 func _fill_empty_matrix():
 	for i in _num_vertices:
 		_matrix.append([])
 		for j in _num_vertices:
 			_matrix[i].append(0)
+	
+## Returns a copy of the given graph
+static func clone(other: AdjacencyGraph):
+	var cloned = AdjacencyGraph.new(other._num_vertices, other._directed)
+	cloned.copy_edges(other)
+	return cloned
+## Copies the edges with their weights from the given adjacency graph to the called. Edges that do not exist in the given graph
+## do not remove existing edges in the called graph.
+func copy_edges(other: AdjacencyGraph):
+	var vert_count = min(_num_vertices, other._num_vertices)
+	for vert in vert_count:
+		for other_vert in vert_count:
+			var edge_weight = other.get_edge_weight(vert, other_vert)
+			if edge_weight > 0:
+				add_edge(vert, other_vert, edge_weight)
 
 ## Adds an edge connecting two vertices with the edge having the given weight.
 ## If the graph is defined as directed, then vert1 will connect to vert2 but not vice versa.
