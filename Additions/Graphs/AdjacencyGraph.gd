@@ -54,6 +54,18 @@ func get_adjacent_verts(vert_index: int) -> Array[int]:
 			adjacent.append(i)
 	return adjacent
 
+## Returns an array of vertices that have at least one edge connected to them.
+func get_verts_with_conns():
+	var verts: Array[int] = []
+	for i in _num_vertices:
+		for j in _num_vertices:
+			if _matrix[i][j] > 0:
+				if !verts.has(i):
+					verts.append(i)
+				if !verts.has(j):
+					verts.append(j)
+	return verts
+
 ## Returns the weight value of the edge made up of the given vertices. If the graph is defined as directed, then the order of vertices
 ## given matters.
 func get_edge_weight(vert1: int, vert2: int) -> int:
