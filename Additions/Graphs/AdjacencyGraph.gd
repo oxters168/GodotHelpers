@@ -5,7 +5,6 @@ extends GraphBase
 class_name AdjacencyGraph
 
 var _matrix = []
-const INT64_MAX: int = 9223372036854775807
 
 ## Creates a new directed or undirected graph object, based on the given parameter, that has the given number of vertices.
 ## A directed graph would be one that can have directional edges and an undirected graph would be one that has bi-directional edges.
@@ -74,7 +73,7 @@ func get_edge_weight(vert1: int, vert2: int) -> int:
 
 ## Returns a bi-directional adjacency graph with the given size where every vertex is guaranteed to be reachable from any other vertex
 ## and the most number of connections per vertex is limited based on the given value
-static func create_rand(vert_count: int, conn_max: int = INT64_MAX):
+static func create_rand(vert_count: int, conn_max: int = Constants.INT64_MAX):
 	var graph = AdjacencyGraph.new(vert_count)
 	var verts_traversed: Array[int] = [0]
 	while verts_traversed.size() < vert_count:
@@ -107,14 +106,14 @@ func get_shortest_path(from: int, to: int):
 	min_dists.resize(_num_vertices)
 	prev_verts.resize(_num_vertices)
 	for vert in _num_vertices:
-		min_dists[vert] = INT64_MAX
+		min_dists[vert] = Constants.INT64_MAX
 		prev_verts[vert] = -1
 		unvisited_verts.append(vert)
 	min_dists[from] = 0
 
 	while !unvisited_verts.is_empty():
 		var unvisited_vert = -1
-		var min_dist = INT64_MAX
+		var min_dist = Constants.INT64_MAX
 		for q in unvisited_verts:
 			if min_dists[q] < min_dist:
 				min_dist = min_dists[q]
