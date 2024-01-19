@@ -76,7 +76,7 @@ func _physics_process(_delta):
 		if result:
 			var col_obj = result.collider
 			var col_pnt = result.position			
-			var cam_frustum_y = CameraHelpers.get_frustum_y_extent(self, near)
+			var cam_frustum_y = CameraHelpers.get_frustum_aspect_extent(self, near)
 			var decreased_dist = (col_pnt - origin).length()
 			var frustum_push_dist = abs(cam_frustum_y / tan(deg_to_rad(angle.x))) + near
 			if debug:

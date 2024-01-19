@@ -94,50 +94,50 @@ static func get_discrete_pos(node: Node, space_step: Vector3, offset: Vector3 = 
 
 ## Returns a vector representing the global right direction of the given object
 ## Shorthand for node.global_transform.basis.x
-static func get_global_right(node: Node):
+static func get_global_right(node: Node) -> Vector3:
 	return node.global_transform.basis.x
 ## Returns a vector representing the global up direction of the given object
 ## Shorthand for node.global_transform.basis.y
-static func get_global_up(node: Node):
+static func get_global_up(node: Node) -> Vector3:
 	return node.global_transform.basis.y
 ## Returns a vector representing the global forward direction of the given object
 ## Shorthand for -node.global_transform.basis.z
-static func get_global_forward(node: Node):
+static func get_global_forward(node: Node) -> Vector3:
 	return -node.global_transform.basis.z
 ## Returns a vector representing the global left direction of the given object
 ## Shorthand for -node.global_transform.basis.x
-static func get_global_left(node: Node):
+static func get_global_left(node: Node) -> Vector3:
 	return -node.global_transform.basis.x
 ## Returns a vector representing the global down direction of the given object
 ## Shorthand for -node.global_transform.basis.y
-static func get_global_down(node: Node):
+static func get_global_down(node: Node) -> Vector3:
 	return -node.global_transform.basis.y
 ## Returns a vector representing the global back direction of the given object
 ## Shorthand for node.global_transform.basis.z
-static func get_global_back(node: Node):
+static func get_global_back(node: Node) -> Vector3:
 	return node.global_transform.basis.z
 
 ## Returns a vector representing the local right direction of the given object
 ## Shorthand for node.transform.basis.x
-static func get_local_right(node: Node):
+static func get_local_right(node: Node) -> Vector3:
 	return node.transform.basis.x
 ## Returns a vector representing the local up direction of the given object
 ## Shorthand for node.transform.basis.y
-static func get_local_up(node: Node):
+static func get_local_up(node: Node) -> Vector3:
 	return node.transform.basis.y
 ## Returns a vector representing the local forward direction of the given object
 ## Shorthand for -node.transform.basis.z
-static func get_local_forward(node: Node):
+static func get_local_forward(node: Node) -> Vector3:
 	return -node.transform.basis.z
 ## Returns a vector representing the local left direction of the given object
 ## Shorthand for -node.transform.basis.x
-static func get_local_left(node: Node):
+static func get_local_left(node: Node) -> Vector3:
 	return -node.transform.basis.x
 ## Returns a vector representing the local down direction of the given object
 ## Shorthand for -node.transform.basis.y
-static func get_local_down(node: Node):
+static func get_local_down(node: Node) -> Vector3:
 	return -node.transform.basis.y
 ## Returns a vector representing the local back direction of the given object
 ## Shorthand for node.transform.basis.z
-static func get_local_back(node: Node):
+static func get_local_back(node: Node) -> Vector3:
 	return node.transform.basis.z
