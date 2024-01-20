@@ -9,6 +9,7 @@ uniform vec4 albedo_ring_color : source_color = vec4(1.0);
 uniform float specular : hint_range(0, 1) = 0.5;
 uniform float metallic : hint_range(0, 1) = 0;
 // uniform float noise_size = 100;
+// A positive ring size or zero cuts off the geometry, negative means apply color to all geometry outside the circle
 uniform float ring_size = 0.03;
 uniform vec3 sphere_mask_pos = vec3(0.0);
 uniform float sphere_mask_radius = 2.0;
@@ -26,18 +27,22 @@ void vertex() {
 void fragment() {
 	float dist = distance(sphere_mask_pos, world_pos);
 	float sphere_cutoff = (1.0 - clamp((dist - sphere_mask_radius) / sphere_mask_softness, 0.0, 1.0)) - 0.1;
-	if (sphere_cutoff < 0.0) {
-		discard;
-	}
-
 	vec4 color = texture(albedo_texture, UV) * albedo_color;
+	if (sphere_cutoff < 0.0) {
+		if (ring_size < 0.0) {
+			color = color * albedo_ring_color;
+		} else {
+			discard;
+		}
+	}
 	// float squares = step(0.5, random(floor(UV * noise_size)));
 	float ring_cutoff = step(sphere_cutoff, ring_size);
-	if (ring_cutoff > 0.0) {
-		color = albedo_ring_color;
+	if (ring_size > 0.0 && ring_cutoff > 0.0) {
+		color = color * albedo_ring_color;
 	}
+	
 	ALBEDO = color.rgb;
 	SPECULAR = specular;
 	METALLIC = metallic;
-	//ALPHA = color.a;
+	// ALPHA = color.a;
 }
