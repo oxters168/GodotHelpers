@@ -87,7 +87,7 @@ func _physics_process(_delta):
 	global_transform.basis = Basis(rot)
 	global_transform.origin = lerp(global_transform.origin, final_pos, linear_lerp)
 
-	input_vector = Input.get_vector("look_hor_neg", "look_hor_pos", "look_ver_neg", "look_ver_pos"); # needs to be at the end since I also want mouse input to affect the camera
+	input_vector = Input.get_vector("look_hor_neg", "look_hor_pos", "look_ver_neg", "look_ver_pos") # needs to be at the end since I also want mouse input to affect the camera
 	input_vector = Vector2(-input_vector.x, input_vector.y)
 
 ## Set the angle limits of the camera, the given values should be in degrees
