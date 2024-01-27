@@ -44,7 +44,7 @@ static func calculate_required_force_for_speed_1d(mass: float, velocity: float, 
 
 	var gravityForce: int = 0
 	if (accountForGravity):
-			gravityForce = -ProjectSettings.get_setting("physics/2d/default_gravity") * mass;
+		gravityForce = -ProjectSettings.get_setting("physics/2d/default_gravity") * mass
 
 	var deltaForce: float = nakedForce - (currentForce + gravityForce)
 
