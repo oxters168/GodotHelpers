@@ -5,6 +5,7 @@
 .import/
 export.cfg
 export_presets.cfg
+Additions/UI/Resources/inverted_circle.svg.import
 
 # Imported translations (automatically generated from CSV files)
 *.translation
