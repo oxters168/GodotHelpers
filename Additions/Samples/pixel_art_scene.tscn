@@ -1,0 +1,63 @@
+[gd_scene load_steps=8 format=3 uid="uid://dsxictcrug26b"]
+
+[ext_resource type="Script" path="res://GodotHelpers/Additions/Misc/PixelArtSubViewportContainer.gd" id="1_7wpom"]
+[ext_resource type="Script" path="res://GodotHelpers/Additions/Cameras/OrbitCamera.gd" id="2_txrdc"]
+[ext_resource type="Shader" path="res://GodotHelpers/Additions/Shaders/OutlinePP.gdshader" id="3_4bixc"]
+[ext_resource type="Script" path="res://GodotHelpers/Additions/Misc/PixelArtPPMesh.gd" id="4_3h5ms"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_lnuc1"]
+render_priority = 0
+shader = ExtResource("3_4bixc")
+shader_parameter/depth_threshold = 0.05
+shader_parameter/reverse_depth_threshold = 0.25
+shader_parameter/normal_threshold = 0.6
+shader_parameter/darken_amount = 0.3
+shader_parameter/lighten_amount = 1.5
+shader_parameter/normal_edge_bias = Vector3(1, 1, 1)
+shader_parameter/light_direction = Vector3(-0.96, -0.18, 0.2)
+
+[sub_resource type="QuadMesh" id="QuadMesh_f72s6"]
+material = SubResource("ShaderMaterial_lnuc1")
+flip_faces = true
+size = Vector2(2, 2)
+
+[sub_resource type="BoxMesh" id="BoxMesh_bd0e6"]
+
+[node name="PixelArtScene" type="Node3D"]
+
+[node name="PixelArtSubViewportContainer" type="SubViewportContainer" parent="."]
+texture_filter = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch = true
+stretch_shrink = 3
+script = ExtResource("1_7wpom")
+
+[node name="SubViewport" type="SubViewport" parent="PixelArtSubViewportContainer"]
+handle_input_locally = false
+size = Vector2i(384, 216)
+render_target_update_mode = 4
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="PixelArtSubViewportContainer/SubViewport"]
+transform = Transform3D(0.707107, 0.5, 0.5, -3.28021e-16, 0.707107, -0.707107, -0.707107, 0.5, 0.5, 0, 0, 0)
+
+[node name="OrbitCamera" type="Camera3D" parent="PixelArtSubViewportContainer/SubViewport" node_paths=PackedStringArray("target")]
+script = ExtResource("2_txrdc")
+mouse_input = true
+angle = Vector3(-45, 45, 2.08165e-12)
+limit_angle = true
+min_angle = Vector3(-360, -360, 2.08165e-12)
+max_angle = Vector3(360, 360, 2.08165e-12)
+target = NodePath("../Cube")
+debug = true
+
+[node name="PixelArtPPMesh" type="MeshInstance3D" parent="PixelArtSubViewportContainer/SubViewport/OrbitCamera"]
+extra_cull_margin = inf
+mesh = SubResource("QuadMesh_f72s6")
+script = ExtResource("4_3h5ms")
+
+[node name="Cube" type="MeshInstance3D" parent="PixelArtSubViewportContainer/SubViewport"]
+mesh = SubResource("BoxMesh_bd0e6")
