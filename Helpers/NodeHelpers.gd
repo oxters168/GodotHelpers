@@ -44,8 +44,8 @@ static func get_children_of_type(current: Node, child_type, include_self = true,
 	return output
 
 ## Returns an array of all children, grand-children, grand-grand-children, etc
-static func get_all_descendants(parent: Node):
-	var all_descendants = []
+static func get_all_descendants(parent: Node) -> Array[Node]:
+	var all_descendants: Array[Node] = []
 	var immediate_children = parent.get_children()
 	all_descendants.append_array(immediate_children)
 	for child in immediate_children:
@@ -53,28 +53,53 @@ static func get_all_descendants(parent: Node):
 	return all_descendants
 
 ## Calculate the total collider bounds of the given node
-## This function is incomplete and only currently works with CapsuleShape3D
+## This function is incomplete and only currently works with CapsuleShape3D, BoxShape3D, and CylinderShape3D
 ## TODO: Add option for bounds from mesh
-## TODO: Add option for local space bounds
-static func get_total_bounds(parent: Node):
+static func get_total_bounds_3d(parent: Node3D, global: bool = true) -> AABB:
 	var all_descendants = get_all_descendants(parent)
 	var total_bounds: AABB
 	var first_bounds = true
 	for child in all_descendants:
-		if (child is CollisionShape3D):
-			var child_bounds: AABB = AABB()
-			if (child.shape is CapsuleShape3D):
-				var size = Vector3(child.shape.radius * 2, child.shape.height, child.shape.radius * 2)
-				# re-orients the size to properly align with the object
-				child_bounds.size = child.global_transform.basis.get_rotation_quaternion().inverse() * size
-				child_bounds.position = child.global_transform.origin - child_bounds.size / 2
-			# TODO: Add more collision shapes
+		if child is Node3D:
+			var child_bounds = get_bounds_3d(child, global)
+			var old_total_bounds = AABB(total_bounds)
 			if (first_bounds):
 				total_bounds = child_bounds
 				first_bounds = false
 			else:
-				total_bounds.merge(child_bounds)
+				total_bounds = total_bounds.merge(child_bounds)
+			# print_debug("Merging ", child_bounds, " with ", old_total_bounds, " = ", total_bounds)
 	return total_bounds
+
+## Calculate the collider bounds of the given node
+## This function is incomplete and only currently works with CapsuleShape3D, BoxShape3D, and CylinderShape3D
+## TODO: Add option for bounds from mesh
+static func get_bounds_3d(obj: Node3D, global: bool = true):
+	var bounds: AABB = AABB()
+	if obj is CollisionShape3D:
+		var casted_obj = (obj as CollisionShape3D)
+		var size = Vector3.ZERO
+		if casted_obj.shape is CapsuleShape3D:
+			var casted_shape = (casted_obj.shape as CapsuleShape3D)
+			size = Vector3(casted_shape.radius * 2, casted_shape.height, casted_shape.radius * 2)
+			# print_debug("Found CapsuleShape3D with size ", size)
+		elif casted_obj.shape is BoxShape3D:
+			var casted_shape = (casted_obj.shape as BoxShape3D)
+			size = casted_shape.size
+			# print_debug("Found BoxShape3D with size ", size)
+		elif casted_obj.shape is CylinderShape3D:
+			var casted_shape = (casted_obj.shape as CylinderShape3D)
+			size = Vector3(casted_shape.radius * 2, casted_shape.height, casted_shape.radius * 2)
+			# print_debug("Found CylinderShape3D with size ", size)
+		bounds.position = obj.position - size / 2
+		bounds.size = size
+	
+	if global && obj.get_parent() != null && obj.get_parent() is Node3D:
+		var parent = (obj.get_parent() as Node3D)
+		var temp_bounds = AABB(bounds)
+		bounds.position = parent.to_global(temp_bounds.position)
+		bounds.end = parent.to_global(temp_bounds.end)
+	return bounds
 
 ## Serializes the given node to a file at the given filepath
 static func save_node_as_scene(root: Node, abs_path: String):
