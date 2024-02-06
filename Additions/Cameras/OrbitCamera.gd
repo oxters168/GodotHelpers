@@ -21,6 +21,8 @@ class_name OrbitCamera
 @export var offset_locally: bool = false
 ## If set to true then the camera will collide with other physics bodies
 @export var abide_to_physics: bool = false
+## Should the camera also avoid the target when camera is abiding to physics
+@export var exclude_target: bool = true
 ## How much to move to the final position each frame. The value 1 would mean move
 ## to the final position, 0.5 would mean go halfway each frame, and 0 would mean
 ## do not move at all (therefore it is excluded).
@@ -67,8 +69,8 @@ func _physics_process(_delta):
 			DebugDraw.draw_ray_3d(origin, cam_dir, 5, Color.BLACK)
 		# exclude ourselves from the physics check
 		var excludedRids: Array = []
-		if target:
-			excludedRids = NodeHelpers.get_children_of_type(target, CollisionObject3D).map(func(col): return col.get_rid())
+		if target && exclude_target:
+			excludedRids = [target.get_rid()]
 		var space_state = get_world_3d().direct_space_state
 		var query = PhysicsRayQueryParameters3D.create(origin, origin + cam_dir * distance, ~0, excludedRids)
 		var result = space_state.intersect_ray(query)

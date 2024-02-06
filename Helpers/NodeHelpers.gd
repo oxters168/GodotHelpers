@@ -118,51 +118,51 @@ static func get_discrete_pos(node: Node, space_step: Vector3, offset: Vector3 = 
 	return VectorHelpers.get_discrete_pos(node.global_transform.origin, space_step, offset)
 
 ## Returns a vector representing the global right direction of the given object
-## Shorthand for node.global_transform.basis.x
+## Shorthand for node.global_transform.basis.x.normalized()
 static func get_global_right(node: Node) -> Vector3:
-	return node.global_transform.basis.x
+	return node.global_transform.basis.x.normalized()
 ## Returns a vector representing the global up direction of the given object
-## Shorthand for node.global_transform.basis.y
+## Shorthand for node.global_transform.basis.y.normalized()
 static func get_global_up(node: Node) -> Vector3:
-	return node.global_transform.basis.y
+	return node.global_transform.basis.y.normalized()
 ## Returns a vector representing the global forward direction of the given object
-## Shorthand for -node.global_transform.basis.z
+## Shorthand for -node.global_transform.basis.z.normalized()
 static func get_global_forward(node: Node) -> Vector3:
-	return -node.global_transform.basis.z
+	return -node.global_transform.basis.z.normalized()
 ## Returns a vector representing the global left direction of the given object
-## Shorthand for -node.global_transform.basis.x
+## Shorthand for -node.global_transform.basis.x.normalized()
 static func get_global_left(node: Node) -> Vector3:
-	return -node.global_transform.basis.x
+	return -node.global_transform.basis.x.normalized()
 ## Returns a vector representing the global down direction of the given object
-## Shorthand for -node.global_transform.basis.y
+## Shorthand for -node.global_transform.basis.y.normalized()
 static func get_global_down(node: Node) -> Vector3:
-	return -node.global_transform.basis.y
+	return -node.global_transform.basis.y.normalized()
 ## Returns a vector representing the global back direction of the given object
-## Shorthand for node.global_transform.basis.z
+## Shorthand for node.global_transform.basis.z.normalized()
 static func get_global_back(node: Node) -> Vector3:
-	return node.global_transform.basis.z
+	return node.global_transform.basis.z.normalized()
 
 ## Returns a vector representing the local right direction of the given object
-## Shorthand for node.transform.basis.x
+## Shorthand for node.transform.basis.x.normalized()
 static func get_local_right(node: Node) -> Vector3:
-	return node.transform.basis.x
+	return node.transform.basis.x.normalized()
 ## Returns a vector representing the local up direction of the given object
-## Shorthand for node.transform.basis.y
+## Shorthand for node.transform.basis.y.normalized()
 static func get_local_up(node: Node) -> Vector3:
-	return node.transform.basis.y
+	return node.transform.basis.y.normalized()
 ## Returns a vector representing the local forward direction of the given object
-## Shorthand for -node.transform.basis.z
+## Shorthand for -node.transform.basis.z.normalized()
 static func get_local_forward(node: Node) -> Vector3:
-	return -node.transform.basis.z
+	return -node.transform.basis.z.normalized()
 ## Returns a vector representing the local left direction of the given object
-## Shorthand for -node.transform.basis.x
+## Shorthand for -node.transform.basis.x.normalized()
 static func get_local_left(node: Node) -> Vector3:
-	return -node.transform.basis.x
+	return -node.transform.basis.x.normalized()
 ## Returns a vector representing the local down direction of the given object
-## Shorthand for -node.transform.basis.y
+## Shorthand for -node.transform.basis.y.normalized()
 static func get_local_down(node: Node) -> Vector3:
-	return -node.transform.basis.y
+	return -node.transform.basis.y.normalized()
 ## Returns a vector representing the local back direction of the given object
-## Shorthand for node.transform.basis.z
+## Shorthand for node.transform.basis.z.normalized()
 static func get_local_back(node: Node) -> Vector3:
-	return node.transform.basis.z
+	return node.transform.basis.z.normalized()

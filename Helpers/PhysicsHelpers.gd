@@ -4,6 +4,12 @@ class_name PhysicsHelpers
 static func get_fixed_delta_time():
 	return 1.0 / Engine.physics_ticks_per_second
 
+## Gets the current angular velocity on the given axis in rad/s
+static func get_axis_angular_velocity(rigidbody: RigidBody3D, axis: Vector3 = Vector3.UP, normal: Vector3 = Vector3.FORWARD) -> float:
+	var rot_dir: float = sign(rigidbody.angular_velocity.dot(axis))
+	var current_ang_vel: float = rot_dir * VectorHelpers.project_on_plane(rigidbody.angular_velocity, normal).length()
+	return current_ang_vel
+
 ## Creates a raycast with the given values and returns the dictionary result of [method PhysicsDirectSpaceState3D.intersect_ray]
 static func raycast_3d(
 	origin: Vector3,
@@ -28,65 +34,115 @@ static func raycast_3d(
 	params.to = origin + direction * distance
 	return space_state.intersect_ray(params)
 
-## Calculates the force vector required to be applied to a rigidbody through AddForce to achieve the desired speed. Works with the Force ForceMode.
-## @param mass: The mass of the rigidbody.</param>
-## @param velocity: The velocity of the rigidbody.</param>
-## @param desiredVelocity: The velocity that you'd like the rigidbody to have.</param>
-## @param timestep: The delta time between frames.</param>
-## @param accountForGravity: Oppose gravity force?</param>
-## @param maxForce: The max force the result can have.</param>
-## <returns>The force value to be applied to the rigidbody.</returns>
+## Rotates the given rigidbody to the specified angle (should be in radians) along an axis
+static func rotate_to(rigidbody: RigidBody3D, axis: Vector3, normal: Vector3, angle: float, acceleration: float, max_speed: float, deceleration: float, delta_time: float):
+	var current_ang_vel: float = PhysicsHelpers.get_axis_angular_velocity(rigidbody, axis, normal)
+	var rot_dir = sign(current_ang_vel)
+	var forward: Vector3 = NodeHelpers.get_global_forward(rigidbody)
+	var current_angle: float = VectorHelpers.get_clockwise_angle_3d(normal, forward, axis)
+	DebugDraw.set_text("rotate_to", str("requested_angle(", angle, ") current_angle(", current_angle, ") ang_vel(", current_ang_vel, ")"))
+	# To avoid going the wrong way to reach an angle
+	if (abs(angle - current_angle) > PI):
+		current_angle += sign(angle - current_angle) * (2 * PI)
+	var angle_travel_left: float = abs(angle - current_angle)
+	var dir_to_go: float = sign(angle - current_angle)
+
+	# How much time would it take us to decelerate based on our current velocity
+	var deceleration_time: float = abs(current_ang_vel / deceleration)
+	# How much time would it take us to reach our desired angle based on our current velocity
+	var reach_time: float = abs(angle_travel_left / current_ang_vel)
+	
+	# If the amount of time to decelerate is longer than the amount of time it would take our momentum to reach (if we're overshooting), then start decelerating
+	if (deceleration_time >= reach_time):
+		var expected_dec = (abs(current_ang_vel) / delta_time)
+		var rot_acc_value = -rot_dir * min(deceleration, expected_dec)
+		rigidbody.apply_torque(rot_acc_value * axis * rigidbody.mass)
+	else:
+		var expected_acc = angle_travel_left / (delta_time * delta_time)
+		# If we're currently rotating in the opposite direction of what we want, use the deceleration value instead of acceleration
+		var rot_acc_value = (dir_to_go * (deceleration if sign(dir_to_go) != rot_dir else min(acceleration, expected_acc)))
+		if (abs(current_ang_vel + (rot_acc_value * delta_time)) >= max_speed):
+			rot_acc_value = dir_to_go * (max_speed - abs(current_ang_vel))
+		
+		rigidbody.apply_torque(rot_acc_value * axis * rigidbody.mass)
+
+## Rotates the rigidbody in a direction along an axis
+static func rotate(rigidbody: RigidBody3D, axis: Vector3, normal: Vector3, input: float, acceleration: float, max_speed: float, deceleration: float, delta_time: float):
+	var current_ang_vel = PhysicsHelpers.get_axis_angular_velocity(rigidbody, axis, normal)
+	var rot_dir = sign(current_ang_vel)
+	# If we're currently rotating in the opposite direction of what we want, use the deceleration value instead of acceleration
+	var rot_acc_value: float = (input * (deceleration if sign(input) != rot_dir else acceleration))
+	var input_rot: bool = abs(input) > Constants.EPSILON
+	if (input_rot && abs(current_ang_vel + (rot_acc_value * delta_time)) >= max_speed):
+		rot_acc_value = sign(rot_acc_value) * (max_speed - abs(current_ang_vel))
+	elif (!input_rot && abs(current_ang_vel) >= (deceleration * delta_time)):
+		rot_acc_value = -rot_dir * deceleration
+	elif (!input_rot && abs(current_ang_vel) > Constants.EPSILON):
+		rot_acc_value = -(current_ang_vel / delta_time)
+	rigidbody.apply_torque(axis * rot_acc_value * rigidbody.mass)
+
+## Retrieves the gravity direction vector from the project settings
+static func get_gravity_vector_3d() -> Vector3:
+	return ProjectSettings.get_setting("physics/3d/default_gravity_vector")
+## Retrieves the gravity vector magnitude from the project settings
+static func get_gravity_magnitude_3d() -> float:
+	return ProjectSettings.get_setting("physics/3d/default_gravity")
+## Combines the gravity direction vector and magnitude to create the gravity force vector
+static func get_gravity_3d() -> Vector3:
+	return get_gravity_vector_3d() * get_gravity_magnitude_3d()
+## Retrieves the gravity direction vector from the project settings
+static func get_gravity_vector_2d() -> Vector2:
+	return ProjectSettings.get_setting("physics/2d/default_gravity_vector")
+## Retrieves the gravity vector magnitude from the project settings
+static func get_gravity_magnitude_2d() -> int:
+	return ProjectSettings.get_setting("physics/2d/default_gravity")
+## Combines the gravity direction vector and magnitude to create the gravity force vector
+static func get_gravity_2d() -> Vector2:
+	return get_gravity_vector_2d() * get_gravity_magnitude_2d()
+
+## Calculates the force vector required to be applied to a rigidbody through [method RigidBody2D.apply_central_force] to achieve the desired speed
 static func calculate_required_force_for_speed_2d(
 	mass: float,
 	velocity: Vector2,
-	desiredVelocity: Vector2,
+	desired_velocity: Vector2,
 	timestep: float = 0.02,
-	accountForGravity: bool = false,
-	maxForce: float = Constants.FLOAT_MAX
+	account_for_gravity: bool = false,
+	max_force: float = Constants.FLOAT_MAX
 ) -> Vector2:
-	var nakedForce: Vector2 = desiredVelocity / timestep
-	nakedForce *= mass
+	var naked_force: Vector2 = desired_velocity / timestep
+	naked_force *= mass
 
-	var currentForce: Vector2 = (velocity / timestep) * mass
+	var current_force: Vector2 = (velocity / timestep) * mass
 
-	var gravityForce: Vector2 = Vector2.ZERO
-	if accountForGravity:
-		var gravity_vector: Vector2 = ProjectSettings.get_setting("physics/2d/default_gravity_vector")
-		var gravity_magnitude: int = ProjectSettings.get_setting("physics/2d/default_gravity")
-		gravityForce = gravity_vector * gravity_magnitude * mass
+	var gravity_force: Vector2 = Vector2.ZERO
+	if account_for_gravity:
+		gravity_force = get_gravity_2d() * mass
 
-	var deltaForce: Vector2 = nakedForce - (currentForce + gravityForce)
+	var delta_force: Vector2 = naked_force - (current_force + gravity_force)
 
-	return VectorHelpers.max_mag2(deltaForce, maxForce)
+	return VectorHelpers.max_mag2(delta_force, max_force)
 
-## Calculates the force value required to be applied to a rigidbody through AddForce to achieve the desired speed. Works with the Force ForceMode.
-## @param mass: The mass of the rigidbody.</param>
-## @param velocity: The velocity of the rigidbody.</param>
-## @param desiredVelocity: The velocity that you'd like the rigidbody to have.</param>
-## @param timestep: The delta time between frames.</param>
-## @param accountForGravity: Oppose gravity force?</param>
-## @param maxForce: The max force the result can have.</param>
-## <returns>The force value to be applied to the rigidbody.</returns>
+## Calculates the force value required to be applied to a rigidbody through [method RigidBody2D.apply_central_force] to achieve the desired speed
 static func calculate_required_force_for_speed_1d(
 	mass: float,
 	velocity: float,
-	desiredVelocity: float,
+	desired_velocity: float,
 	timestep: float = 0.02,
-	accountForGravity: bool = false,
-	maxForce: float = Constants.FLOAT_MAX
+	account_for_gravity: bool = false,
+	max_force: float = Constants.FLOAT_MAX
 ) -> float:
-	var nakedForce: float = desiredVelocity / timestep
-	nakedForce *= mass
+	var naked_force: float = desired_velocity / timestep
+	naked_force *= mass
 
-	var currentForce: float = (velocity / timestep) * mass
+	var current_force: float = (velocity / timestep) * mass
 
-	var gravityForce: int = 0
-	if (accountForGravity):
-		gravityForce = ProjectSettings.get_setting("physics/2d/default_gravity") * mass
+	var gravity_force: int = 0
+	if (account_for_gravity):
+		gravity_force = get_gravity_magnitude_2d() * mass
 
-	var deltaForce: float = nakedForce - (currentForce + gravityForce)
+	var delta_force: float = naked_force - (current_force + gravity_force)
 
-	if (deltaForce > maxForce):
-			deltaForce = maxForce
+	if (delta_force > max_force):
+			delta_force = max_force
 
-	return deltaForce
+	return delta_force
