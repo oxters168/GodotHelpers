@@ -71,14 +71,26 @@ static func rotate(rigidbody: RigidBody3D, axis: Vector3, normal: Vector3, input
 	var current_ang_vel = PhysicsHelpers.get_axis_angular_velocity(rigidbody, axis, normal)
 	var rot_dir = sign(current_ang_vel)
 	# If we're currently rotating in the opposite direction of what we want, use the deceleration value instead of acceleration
-	var rot_acc_value: float = (input * (deceleration if sign(input) != rot_dir else acceleration))
+	var rot_acc_value: float = 0
 	var input_rot: bool = abs(input) > Constants.EPSILON
-	if (input_rot && abs(current_ang_vel + (rot_acc_value * delta_time)) >= max_speed):
+
+	# if input is being received and in the next frame we are still under out speed goal then apply the expected acceleration
+	# or deceleration based on which way we are inputting
+	if input_rot && max_speed > Constants.EPSILON && abs(current_ang_vel + (rot_acc_value * delta_time)) < max_speed:
+		rot_acc_value = input * (deceleration if sign(input) != rot_dir else acceleration)
+	# if input is being received and in the next frame we will overshoot our speed goal then only apply the needed amount of
+	# acceleration
+	elif input_rot && max_speed > Constants.EPSILON && abs(current_ang_vel + (rot_acc_value * delta_time)) >= max_speed:
 		rot_acc_value = sign(rot_acc_value) * (max_speed - abs(current_ang_vel))
-	elif (!input_rot && abs(current_ang_vel) >= (deceleration * delta_time)):
+	# else if input is not being received and the next frame we will not overshoot our rest speed goal then only apply the
+	# expected deceleration amount
+	elif abs(current_ang_vel) >= (deceleration * delta_time):
 		rot_acc_value = -rot_dir * deceleration
-	elif (!input_rot && abs(current_ang_vel) > Constants.EPSILON):
+	# else if input is not being received and our speed is still not at rest then apply a deceleration value calculated through our
+	# current speed to only apply the amount needed to reach rest
+	elif abs(current_ang_vel) > Constants.EPSILON:
 		rot_acc_value = -(current_ang_vel / delta_time)
+	# DebugDraw.set_text("Rotate", str("input(", input, ") max_speed(", max_speed, ") applied_acc(", rot_acc_value, ")"))
 	rigidbody.apply_torque(axis * rot_acc_value * rigidbody.mass)
 
 ## Retrieves the gravity direction vector from the project settings
