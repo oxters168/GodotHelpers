@@ -6,7 +6,7 @@ render_mode unshaded;
 
 uniform sampler2D screen_texture : source_color, hint_screen_texture, filter_nearest;
 uniform sampler2D depth_texture : source_color, hint_depth_texture, filter_nearest;
-uniform sampler2D normal_texture : source_color, hint_normal_roughness_texture, filter_nearest;
+//uniform sampler2D normal_texture : source_color, hint_normal_roughness_texture, filter_nearest;
 
 uniform float depth_threshold : hint_range(0, 1) = 0.05;
 uniform float reverse_depth_threshold : hint_range(0, 1) = 0.25;
@@ -32,7 +32,7 @@ void vertex() {
 
 void fragment() {
 	float depth = get_depth(SCREEN_UV, INV_PROJECTION_MATRIX);
-	vec3 normal = texture(normal_texture, SCREEN_UV).xyz * 2.0 - 1.0;
+	//vec3 normal = texture(normal_texture, SCREEN_UV).xyz * 2.0 - 1.0;
 	vec2 texel_size = 1.0 / VIEWPORT_SIZE.xy;
 	
 	vec2 uvs[4];
@@ -46,7 +46,7 @@ void fragment() {
 	float nearest_depth = depth;
 	vec2 nearest_uv = SCREEN_UV;
 	
-	float normal_sum = 0.0;
+	//float normal_sum = 0.0;
 	for (int i = 0; i < 4; i++) {
 		float d = get_depth(uvs[i], INV_PROJECTION_MATRIX);
 		depth_diff += depth - d;
@@ -57,14 +57,14 @@ void fragment() {
 			nearest_uv = uvs[i];
 		}
 		
-		vec3 n = texture(normal_texture, uvs[i]).xyz * 2.0 - 1.0;
-		vec3 normal_diff = normal - n;
+		//vec3 n = texture(normal_texture, uvs[i]).xyz * 2.0 - 1.0;
+		//vec3 normal_diff = normal - n;
 		
 		// Edge pixels should yield to the normal closest to the bias direction
-		float normal_bias_diff = dot(normal_diff, normal_edge_bias);
-		float normal_indicator = smoothstep(-0.01, 0.01, normal_bias_diff);
+		//float normal_bias_diff = dot(normal_diff, normal_edge_bias);
+		//float normal_indicator = smoothstep(-0.01, 0.01, normal_bias_diff);
 		
-		normal_sum += dot(normal_diff, normal_diff) * normal_indicator;
+		//normal_sum += dot(normal_diff, normal_diff) * normal_indicator;
 	}
 	float depth_edge = step(depth_threshold, depth_diff);
 	
@@ -72,8 +72,9 @@ void fragment() {
 	// Instead, we can use this value to mask the normal edge along the outside of the object
 	float reverse_depth_edge = step(reverse_depth_threshold, depth_diff_reversed); 
 	
-	float indicator = sqrt(normal_sum);
-	float normal_edge = step(normal_threshold, indicator - reverse_depth_edge);
+	//float indicator = sqrt(normal_sum);
+	//float normal_edge = step(normal_threshold, indicator - reverse_depth_edge);
+	
 	
 	vec3 original = texture(screen_texture, SCREEN_UV).rgb;
 	vec3 nearest = texture(screen_texture, nearest_uv).rgb;
@@ -83,13 +84,13 @@ void fragment() {
             INV_VIEW_MATRIX[1].xyz,
             INV_VIEW_MATRIX[2].xyz
 	);
-	float ld = dot((view_to_world_normal_mat * normal), normalize(light_direction));
+	//float ld = dot((view_to_world_normal_mat * normal), normalize(light_direction));
 	
 	vec3 depth_col = nearest * darken_amount;
-	vec3 normal_col = original * (ld > 0.0 ? darken_amount : lighten_amount);
+	vec3 normal_col = original * darken_amount;
 	vec3 edge_mix = mix(normal_col, depth_col, depth_edge);
 	
 	// for black & white
 	// ALBEDO = vec3(depth_edge);
-	ALBEDO = mix(original, edge_mix, (depth_edge > 0.0 ? depth_edge : normal_edge));
+	ALBEDO = mix(original, edge_mix, depth_edge);
 }
