@@ -52,17 +52,17 @@ static func get_all_descendants(parent: Node) -> Array[Node]:
 		all_descendants.append_array(get_all_descendants(child))
 	return all_descendants
 
-## Calculate the total collider bounds of the given node
-## This function is incomplete and only currently works with CapsuleShape3D, BoxShape3D, and CylinderShape3D
-## TODO: Add option for bounds from mesh
-static func get_total_bounds_3d(parent: Node3D, global: bool = true) -> AABB:
+## Calculate the total bounds of the given node.
+## This function is incomplete and only currently works with the following collision shapes when [param from_collider]
+## is set to true: CapsuleShape3D, BoxShape3D, and CylinderShape3D
+static func get_total_bounds_3d(parent: Node3D, from_collider: bool = false, global: bool = false) -> AABB:
 	var all_descendants = get_all_descendants(parent)
+	all_descendants.append(parent)
 	var total_bounds: AABB
 	var first_bounds = true
 	for child in all_descendants:
 		if child is Node3D:
-			var child_bounds = get_bounds_3d(child, global)
-			var old_total_bounds = AABB(total_bounds)
+			var child_bounds = get_bounds_3d(child, from_collider, global)
 			if (first_bounds):
 				total_bounds = child_bounds
 				first_bounds = false
@@ -71,12 +71,12 @@ static func get_total_bounds_3d(parent: Node3D, global: bool = true) -> AABB:
 			# print_debug("Merging ", child_bounds, " with ", old_total_bounds, " = ", total_bounds)
 	return total_bounds
 
-## Calculate the collider bounds of the given node
-## This function is incomplete and only currently works with CapsuleShape3D, BoxShape3D, and CylinderShape3D
-## TODO: Add option for bounds from mesh
-static func get_bounds_3d(obj: Node3D, global: bool = true):
+## Calculate the bounds of the given node.
+## This function is incomplete and only currently works with the following collision shapes when [param from_collider]
+## is set to true: CapsuleShape3D, BoxShape3D, and CylinderShape3D
+static func get_bounds_3d(obj: Node3D, from_collider: bool = false, global: bool = false):
 	var bounds: AABB = AABB()
-	if obj is CollisionShape3D:
+	if from_collider && obj is CollisionShape3D:
 		var casted_obj = (obj as CollisionShape3D)
 		var size = Vector3.ZERO
 		if casted_obj.shape is CapsuleShape3D:
@@ -93,6 +93,9 @@ static func get_bounds_3d(obj: Node3D, global: bool = true):
 			# print_debug("Found CylinderShape3D with size ", size)
 		bounds.position = obj.position - size / 2
 		bounds.size = size
+	elif !from_collider && obj is MeshInstance3D:
+		var casted_obj = (obj as MeshInstance3D)
+		bounds = casted_obj.get_aabb()
 	
 	if global && obj.get_parent() != null && obj.get_parent() is Node3D:
 		var parent = (obj.get_parent() as Node3D)
