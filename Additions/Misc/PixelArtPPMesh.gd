@@ -14,6 +14,8 @@ func _init():
 	_quad_mesh.size = Vector2(2, 2)
 	_quad_mesh.flip_faces = true
 	_quad_mesh.material = _quad_mat
+	# set render priority to the lowest value so that post processing happens at the very end
+	_quad_mesh.material.render_priority = -128
 
 	extra_cull_margin = Constants.FLOAT_MAX
 	mesh = _quad_mesh
