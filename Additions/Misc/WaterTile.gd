@@ -1,0 +1,137 @@
+extends MeshInstance3D
+## Used as reference: https://www.habrador.com/tutorials/unity-boat-tutorial/3-buoyancy/
+class_name WaterTile
+
+var _plane_mesh: PlaneMesh
+var _listening_collider: CollisionShape3D
+
+## The size of the plane mesh
+@export var size: Vector2 = Vector2(20, 20):
+	set(new_size):
+		size = new_size
+		_refresh_plane()
+		_refresh_area_3d()
+## How much to subdivide the plane
+@export var subdivide: Vector2i = Vector2i.ZERO:
+	set(new_subdivide):
+		subdivide = new_subdivide
+		_refresh_plane()
+
+@export_group("Physics")
+## Should this water tile apply buoyancy forces to any physics objects that fall in
+@export var apply_buoyancy: bool = false
+## Density of liquid
+@export var rho: float = 150
+## How far below the surface does the water affect objects
+@export var water_depth: float = 50:
+	set(new_water_depth):
+		water_depth = new_water_depth
+		_refresh_area_3d()
+## Show debug data
+@export var debug: bool = false
+
+## Node3D -> Array[WaterTile] (only the first water tile in the array processes the given floater)
+static var _current_floaters: Dictionary = {}
+## CollisionObject3D -> Dictionary<CollisionShape3D, Mesh>
+static var _floater_cache: Dictionary = {}
+
+func _init():
+	var water_mat = ShaderMaterial.new()
+	water_mat.shader = preload("../Shaders/ToonWater.gdshader")
+	water_mat.set_shader_parameter("surfaceNoise", preload("../Shaders/Resources/WaterPerlinNoise.png"))
+	water_mat.set_shader_parameter("distortNoise", preload("../Shaders/Resources/WaterDistortion.png"))
+
+	_plane_mesh = PlaneMesh.new()
+	_plane_mesh.material = water_mat
+	_refresh_plane()
+	
+	var area_3d = Area3D.new()
+	area_3d.body_entered.connect(_on_body_entered)
+	area_3d.body_exited.connect(_on_body_exited)
+	add_child(area_3d)
+	var box_shape = BoxShape3D.new()
+	_listening_collider = CollisionShape3D.new()
+	_listening_collider.shape = box_shape
+	area_3d.add_child(_listening_collider)
+	_refresh_area_3d()
+
+	mesh = _plane_mesh
+func _physics_process(_delta):
+	if apply_buoyancy:
+		_process_buoyancy()
+
+func _process_buoyancy():
+	var processed_floater: bool = false
+	var gravity: Vector3 = PhysicsHelpers.get_gravity_3d()
+	for floating_obj in _current_floaters.keys():
+		# if an object was intersected with and we are the water tile in charge of applying forces to it
+		if _current_floaters[floating_obj][0] == self:
+			processed_floater = true
+			# if this object has not been seen yet then cache its children who will be used to calculate how buoyancy will affect it
+			if !_floater_cache.has(floating_obj):
+				# _floater_cache[floating_obj] = FloaterData.new(NodeHelpers.get_children_of_type(floating_obj, MeshInstance3D))
+				var collision_shapes = NodeHelpers.get_children_of_type(floating_obj, CollisionShape3D)
+				var colliders_dict: Dictionary = {}
+				# for each collision shape, create a corresponding mesh
+				for collision_shape in collision_shapes:
+					var meshed_shape = MeshHelpers.collision_shape_to_mesh(collision_shape.shape)
+					if meshed_shape != null:
+						colliders_dict[collision_shape] = meshed_shape
+				_floater_cache[floating_obj] = colliders_dict
+			var floater_data: Dictionary = _floater_cache[floating_obj]
+			for collision_shape in floater_data.keys():
+				for surface_id in floater_data[collision_shape].get_surface_count():
+					var surface_data = floater_data[collision_shape].surface_get_arrays(surface_id)
+					var vertices = surface_data[Mesh.ARRAY_VERTEX]
+					var triangles = surface_data[Mesh.ARRAY_INDEX]
+					# a dictionary that goes from vert_index -> global_vert
+					# var global_vertices: Dictionary = {}
+					# the start index of any triangle under the surface (helps us keep track of what triangles have been done)
+					var triangle_indices: Array[int] = []
+					for vert_index in vertices.size():
+						var global_vert = collision_shape.to_global(vertices[vert_index])
+						if get_water_displacement_at(global_vert) < 0:
+							# global_vertices[vert_index] = vert_index
+							var start_index: int = triangles.find(vert_index)
+							start_index = (start_index / 3) * 3
+							if !triangle_indices.has(start_index):
+								triangle_indices.append(start_index)
+								var vert_a = collision_shape.to_global(vertices[triangles[start_index]])
+								var vert_b = collision_shape.to_global(vertices[triangles[start_index + 1]])
+								var vert_c = collision_shape.to_global(vertices[triangles[start_index + 2]])
+								var triangle = MeshHelpers.Triangle.new(vert_a, vert_b, vert_c)
+								if debug:
+									DebugDraw.draw_line_3d(vert_a, vert_b, Color.GREEN, 2)
+									DebugDraw.draw_line_3d(vert_b, vert_c, Color.GREEN, 2)
+									DebugDraw.draw_line_3d(vert_a, vert_c, Color.GREEN, 2)
+									# DebugDraw.draw_ray_3d(triangle.center, triangle.normal, 1, Color.BLUE, 2)
+								# TODO: Make force work with any gravity orientation, not just the assumed up direction
+								# print_debug(rho, " * ", gravity.y, " * ", abs(get_water_displacement_at(triangle.center)), " * ", triangle.area, " * ", triangle.normal)
+								var force: Vector3 = rho * gravity.y * abs(get_water_displacement_at(triangle.center)) * triangle.area * triangle.normal
+								force = Vector3(0, force.y, 0)
+								floating_obj.apply_force(force, triangle.center - floating_obj.global_position)
+	if debug:
+		DebugDraw.draw_box(_listening_collider.global_position, _listening_collider.shape.size, Color.GREEN if processed_floater else Color.RED, 2)
+
+func _on_body_entered(body: Node3D):
+	if _current_floaters.has(body):
+		_current_floaters[body].append(self)
+	else:
+		_current_floaters[body] = [self]
+func _on_body_exited(body: Node3D):
+	if _current_floaters[body].size() > 1:
+		_current_floaters[body].erase(self)
+	else:
+		_current_floaters.erase(body)
+
+func get_water_displacement_at(pos: Vector3) -> float:
+	return pos.y - global_position.y
+
+func _refresh_area_3d():
+	var box_shape = _listening_collider.shape as BoxShape3D
+	box_shape.size = Vector3(size.x, water_depth, size.y)
+	_listening_collider.position = NodeHelpers.get_local_down(self) * water_depth / 2
+func _refresh_plane():
+	_plane_mesh.size = size
+	_plane_mesh.subdivide_width = subdivide.x
+	_plane_mesh.subdivide_depth = subdivide.y
