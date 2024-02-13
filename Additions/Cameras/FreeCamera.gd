@@ -47,7 +47,7 @@ func _physics_process(delta):
 	var rot = (Quaternion(Vector3.UP, angle_rad.y) * Quaternion(Vector3.RIGHT, angle_rad.x)) * Quaternion(Vector3.BACK, angle_rad.z)
 	
 	global_transform.basis = Basis(rot)
-	global_transform.origin = global_transform.origin + NodeHelpers.get_global_forward(self) * (move_input.y * speed * delta) + NodeHelpers.get_global_right(self) * (move_input.x * speed * delta) + NodeHelpers.get_global_up(self) * (move_lat_input * speed * delta)
+	global_transform.origin = global_transform.origin + NodeHelpers.get_global_back(self) * (move_input.y * speed * delta) + NodeHelpers.get_global_left(self) * (move_input.x * speed * delta) + NodeHelpers.get_global_up(self) * (move_lat_input * speed * delta)
 	if debug:
 		DebugDraw.set_text("CamPos", global_transform.origin)
 	

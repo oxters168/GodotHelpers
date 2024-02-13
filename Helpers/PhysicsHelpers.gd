@@ -38,8 +38,8 @@ static func raycast_3d(
 static func rotate_to(rigidbody: RigidBody3D, axis: Vector3, normal: Vector3, angle: float, acceleration: float, max_speed: float, deceleration: float, delta_time: float):
 	var current_ang_vel: float = PhysicsHelpers.get_axis_angular_velocity(rigidbody, axis, normal)
 	var rot_dir = sign(current_ang_vel)
-	var forward: Vector3 = NodeHelpers.get_global_forward(rigidbody)
-	var current_angle: float = VectorHelpers.get_clockwise_angle_3d(normal, forward, axis)
+	var back: Vector3 = NodeHelpers.get_global_back(rigidbody)
+	var current_angle: float = VectorHelpers.get_clockwise_angle_3d(normal, back, axis)
 	# DebugDraw.set_text("rotate_to", str("requested_angle(", angle, ") current_angle(", current_angle, ") ang_vel(", current_ang_vel, ")"))
 	# To avoid going the wrong way to reach an angle
 	if (abs(angle - current_angle) > PI):

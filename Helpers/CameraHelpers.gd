@@ -52,16 +52,16 @@ static func world_to_viewport_size(cam: Camera3D, world_size: Vector3) -> Vector
 ## and a line going from the bottom left corner to the top right corner and the edges of the camera frustum at the given distance
 static func display_frustum_at(cam: Camera3D, z: float, color: Color = Color.WHITE, linger_frames: int = 0):
 	var frustum_extents = get_frustum_extents(cam, z)
-	var cam_forward = NodeHelpers.get_global_forward(cam)
-	var cam_right = NodeHelpers.get_global_right(cam)
+	var cam_back = NodeHelpers.get_global_back(cam)
+	var cam_left = NodeHelpers.get_global_left(cam)
 	var cam_down = NodeHelpers.get_global_down(cam)
-	var relative_frustum_right = cam_right * frustum_extents.x
+	var relative_frustum_left = cam_left * frustum_extents.x
 	var relative_frustum_down = cam_down * frustum_extents.y
 
-	var top_left_corner = cam.position + cam_forward * z - relative_frustum_right - relative_frustum_down
-	var bottom_right_corner = cam.position + cam_forward * z + relative_frustum_right + relative_frustum_down
-	var bottom_left_corner = cam.position + cam_forward * z - relative_frustum_right + relative_frustum_down
-	var top_right_corner = cam.position + cam_forward * z + relative_frustum_right - relative_frustum_down
+	var top_left_corner = cam.position + cam_back * z - relative_frustum_left - relative_frustum_down
+	var bottom_right_corner = cam.position + cam_back * z + relative_frustum_left + relative_frustum_down
+	var bottom_left_corner = cam.position + cam_back * z - relative_frustum_left + relative_frustum_down
+	var top_right_corner = cam.position + cam_back * z + relative_frustum_left - relative_frustum_down
 	# top left to bottom right diagonal
 	DebugDraw.draw_line_3d(bottom_right_corner, top_left_corner, color, linger_frames)
 	# bottom left to top right diagonal
