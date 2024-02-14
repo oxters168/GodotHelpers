@@ -10,24 +10,56 @@ class_name Buoyancy
 ## If not set, will use the waterLevel variable.
 # var getWaterDisplacementAt: Callable # Vector3 -> float
 
+signal on_enter_water(obj: RigidBody3D)
+signal on_exit_water(obj: RigidBody3D)
+
 var _floater: RigidBody3D
+var _freshly_underwater: bool = true
 
 ## Density of liquid
 @export var rho: float = 150
+## Should the triangle data be recalculated each time the object goes underwater
+@export var recalculate_triangles_on_water_entry: bool = false
 ## Show debug data
 @export var debug: bool = false
+## Show bounds when debugging
+@export var show_bounds: bool = false
 
 # CollisionShape3D -> Array[Array[MeshHelpers.Triangle]]
-var _all_local_triangles: Dictionary = {}
+# var _all_collider_data: Dictionary = {}
+var _all_collider_data: Array[ColliderData] = []
 # The total _bounds of the object to let us know when we have dipped under the water
 var _bounds: AABB
+
+class ColliderData:
+	var collider: CollisionShape3D
+	# Array[Array[MeshHelpers.Triangle]]
+	var surfaces: Array
+
+	func _init(col: CollisionShape3D, surf: Array):
+		collider = col
+		surfaces = surf
 	
 func _ready():
 	_floater = NodeHelpers.get_parent_of_type(self, RigidBody3D)
 	recalculate_triangle_data()
 func _physics_process(_delta):
-	if is_underwater():
+	var underwater = is_underwater()
+	if debug:
+		var collision_shapes = NodeHelpers.get_children_of_type(_floater, CollisionShape3D)
+		DebugDraw.set_text(str(_floater, "_buoyancy"), str("is under water" if underwater else "is above water", " has ", collision_shapes.size(), " collider(s) with collider data for ", _all_collider_data.size()))
+	if underwater:
+		# each time we enter the water, recalculate our triangle data
+		if _freshly_underwater:
+			if recalculate_triangles_on_water_entry:
+				recalculate_triangle_data()
+			on_enter_water.emit(_floater)
+		_freshly_underwater = false
 		_apply_forces()
+	else:
+		if !_freshly_underwater:
+			on_exit_water.emit(_floater)
+		_freshly_underwater = true
 
 func get_water_displacement_at(pos: Vector3) -> float:
 	return pos.y - waterLevel
@@ -59,7 +91,7 @@ func is_underwater():
 		if get_water_displacement_at(corner) < 0:
 			result = true
 			break
-	if debug:
+	if debug && show_bounds:
 		var color = Color.BLUE
 		for corner in all_corners:
 			for other_corner in all_corners:
@@ -68,40 +100,41 @@ func is_underwater():
 	return result
 ## Recalculates the local triangle positions and their parents for future force application, make sure to call this whenever the object's shape changes
 func recalculate_triangle_data():
+	if debug:
+		print_debug("Recalculating triangle data of ", _floater)
 	_bounds = NodeHelpers.get_total_bounds_3d(_floater, true)
-	_all_local_triangles.clear()
+	_all_collider_data.clear()
 	var collision_shapes = NodeHelpers.get_children_of_type(_floater, CollisionShape3D)
 	for collider in collision_shapes:
 		var collider_mesh = MeshHelpers.collision_shape_to_mesh(collider.shape)
-		if collider_mesh != null:
-			# prepare the array of arrays
-			_all_local_triangles[collider] = []
-			for surface_index in collider_mesh.get_surface_count():
-				var mesh_info = collider_mesh.surface_get_arrays(surface_index)
-				var vertices: PackedVector3Array = mesh_info[Mesh.ARRAY_VERTEX]
-				var indices: PackedInt32Array = mesh_info[Mesh.ARRAY_INDEX]
-				var triangles: Array[MeshHelpers.Triangle] = []
-				for i in range(0, indices.size(), 3):
-					triangles.append(MeshHelpers.Triangle.new(vertices[indices[i]], vertices[indices[i + 1]], vertices[indices[i + 2]]))
-				# append the current surface's array of triangles
-				_all_local_triangles[collider].append(triangles)
-	if debug:
-		print_debug("Found ", _all_local_triangles.size(), " collider(s) in ", _floater)
+		# prepare the array of arrays
+		var surfaces = []
+		for surface_index in collider_mesh.get_surface_count():
+			var mesh_info = collider_mesh.surface_get_arrays(surface_index)
+			var vertices: PackedVector3Array = mesh_info[Mesh.ARRAY_VERTEX]
+			var indices: PackedInt32Array = mesh_info[Mesh.ARRAY_INDEX]
+			var triangles: Array[MeshHelpers.Triangle] = []
+			for i in range(0, indices.size(), 3):
+				triangles.append(MeshHelpers.Triangle.new(vertices[indices[i]], vertices[indices[i + 1]], vertices[indices[i + 2]]))
+			# append the current surface's array of triangles
+			surfaces.append(triangles)
+		_all_collider_data.append(ColliderData.new(collider, surfaces))
 func _apply_forces():
 	var gravity = PhysicsHelpers.get_gravity_3d()
-	for collider in _all_local_triangles.keys():
-		for triangle_data in _all_local_triangles[collider]:
+	for collider_data in _all_collider_data:
+		for triangle_data in collider_data.surfaces:
 			for local_triangle in triangle_data:
-				# var triangle_center = collider.to_global(triangle.center)
-				var vert_a = collider.to_global(local_triangle.vertexA)
-				var vert_b = collider.to_global(local_triangle.vertexB)
-				var vert_c = collider.to_global(local_triangle.vertexC)
-				var triangle = MeshHelpers.Triangle.new(vert_a, vert_b, vert_c)
-				if get_water_displacement_at(triangle.center) < 0:
+				var triangle_center = collider_data.collider.to_global(local_triangle.center)
+				# var triangle = MeshHelpers.Triangle.new(vert_a, vert_b, vert_c)
+				if get_water_displacement_at(triangle_center) < 0:
 					if debug:
+						var vert_a = collider_data.collider.to_global(local_triangle.vertexA)
+						var vert_b = collider_data.collider.to_global(local_triangle.vertexB)
+						var vert_c = collider_data.collider.to_global(local_triangle.vertexC)
 						DebugDraw.draw_line_3d(vert_a, vert_b, Color.GREEN, 2)
 						DebugDraw.draw_line_3d(vert_b, vert_c, Color.GREEN, 2)
 						DebugDraw.draw_line_3d(vert_a, vert_c, Color.GREEN, 2)
-					var force: Vector3 = rho * gravity.y * abs(get_water_displacement_at(triangle.center)) * triangle.area * triangle.normal
+					var triangle_normal = collider_data.collider.to_global(local_triangle.normal) - collider_data.collider.global_position
+					var force: Vector3 = rho * gravity.y * abs(get_water_displacement_at(triangle_center)) * local_triangle.area * triangle_normal
 					force = Vector3(0, force.y, 0)
-					_floater.apply_force(force, triangle.center - _floater.global_position)
+					_floater.apply_force(force, triangle_center - _floater.global_position)

@@ -77,7 +77,7 @@ var _listening_collider: CollisionShape3D
 var _water_mat: ShaderMaterial
 ## Node3D -> Array[WaterTile] (only the first water tile in the array processes the given floater)
 static var _current_floaters: Dictionary = {}
-## CollisionObject3D -> Dictionary<CollisionShape3D, Mesh>
+## CollisionObject3D -> Dictionary<CollisionShape3D, Array[Array[MeshHelpers.Triangle]]>
 static var _floater_cache: Dictionary = {}
 
 func _init():
@@ -121,40 +121,38 @@ func _process_buoyancy():
 				for collision_shape in collision_shapes:
 					var meshed_shape = MeshHelpers.collision_shape_to_mesh(collision_shape.shape)
 					if meshed_shape != null:
-						colliders_dict[collision_shape] = meshed_shape
+						colliders_dict[collision_shape] = []
+						for surface_id in meshed_shape.get_surface_count():
+							var surface_data = meshed_shape.surface_get_arrays(surface_id)
+							var vertices = surface_data[Mesh.ARRAY_VERTEX]
+							var indices = surface_data[Mesh.ARRAY_INDEX]
+							var triangles: Array[MeshHelpers.Triangle] = []
+							for i in range(0, indices.size(), 3):
+								triangles.append(MeshHelpers.Triangle.new(vertices[indices[i]], vertices[indices[i + 1]], vertices[indices[i + 2]]))
+							colliders_dict[collision_shape].append(triangles)
 				_floater_cache[floating_obj] = colliders_dict
 			var floater_data: Dictionary = _floater_cache[floating_obj]
+			if debug:
+				DebugDraw.set_text(str(floating_obj, "_buoyancy"), str(floater_data.size(), " collider(s) ", " processed by ", self))
 			for collision_shape in floater_data.keys():
-				for surface_id in floater_data[collision_shape].get_surface_count():
-					var surface_data = floater_data[collision_shape].surface_get_arrays(surface_id)
-					var vertices = surface_data[Mesh.ARRAY_VERTEX]
-					var triangles = surface_data[Mesh.ARRAY_INDEX]
-					# a dictionary that goes from vert_index -> global_vert
-					# var global_vertices: Dictionary = {}
-					# the start index of any triangle under the surface (helps us keep track of what triangles have been done)
-					var triangle_indices: Array[int] = []
-					for vert_index in vertices.size():
-						var global_vert = collision_shape.to_global(vertices[vert_index])
-						if get_water_displacement_at(global_vert) < 0:
-							# global_vertices[vert_index] = vert_index
-							var start_index: int = triangles.find(vert_index)
-							start_index = (start_index / 3) * 3
-							if !triangle_indices.has(start_index):
-								triangle_indices.append(start_index)
-								var vert_a = collision_shape.to_global(vertices[triangles[start_index]])
-								var vert_b = collision_shape.to_global(vertices[triangles[start_index + 1]])
-								var vert_c = collision_shape.to_global(vertices[triangles[start_index + 2]])
-								var triangle = MeshHelpers.Triangle.new(vert_a, vert_b, vert_c)
-								if debug:
-									DebugDraw.draw_line_3d(vert_a, vert_b, Color.GREEN, 2)
-									DebugDraw.draw_line_3d(vert_b, vert_c, Color.GREEN, 2)
-									DebugDraw.draw_line_3d(vert_a, vert_c, Color.GREEN, 2)
-									# DebugDraw.draw_ray_3d(triangle.center, triangle.normal, 1, Color.BLUE, 2)
-								# TODO: Make force work with any gravity orientation, not just the assumed up direction
-								# print_debug(rho, " * ", gravity.y, " * ", abs(get_water_displacement_at(triangle.center)), " * ", triangle.area, " * ", triangle.normal)
-								var force: Vector3 = rho * gravity.y * abs(get_water_displacement_at(triangle.center)) * triangle.area * triangle.normal
-								force = Vector3(0, force.y, 0)
-								floating_obj.apply_force(force, triangle.center - floating_obj.global_position)
+				for triangles in floater_data[collision_shape]:
+					for local_triangle in triangles:
+						var triangle_center = collision_shape.to_global(local_triangle.center)
+						if get_water_displacement_at(triangle_center) < 0:
+							if debug:
+								var vert_a = collision_shape.to_global(local_triangle.vertexA)
+								var vert_b = collision_shape.to_global(local_triangle.vertexB)
+								var vert_c = collision_shape.to_global(local_triangle.vertexC)
+								DebugDraw.draw_line_3d(vert_a, vert_b, Color.GREEN, 2)
+								DebugDraw.draw_line_3d(vert_b, vert_c, Color.GREEN, 2)
+								DebugDraw.draw_line_3d(vert_a, vert_c, Color.GREEN, 2)
+								# DebugDraw.draw_ray_3d(triangle.center, triangle.normal, 1, Color.BLUE, 2)
+							# TODO: Make force work with any gravity orientation, not just the assumed up direction
+							# print_debug(rho, " * ", gravity.y, " * ", abs(get_water_displacement_at(triangle.center)), " * ", triangle.area, " * ", triangle.normal)
+							var triangle_normal = collision_shape.to_global(local_triangle.normal) - collision_shape.global_position
+							var force: Vector3 = rho * gravity.y * abs(get_water_displacement_at(triangle_center)) * local_triangle.area * triangle_normal
+							force = Vector3(0, force.y, 0)
+							floating_obj.apply_force(force, triangle_center - floating_obj.global_position)
 	if debug:
 		DebugDraw.draw_box(_listening_collider.global_position, _listening_collider.shape.size, Color.GREEN if processed_floater else Color.RED, 2)
 

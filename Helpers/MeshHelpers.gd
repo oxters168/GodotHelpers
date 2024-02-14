@@ -26,7 +26,6 @@ static func collision_shape_to_mesh(shape: Shape3D, subdivide_width: int = 0, su
 	var final_mesh: Mesh
 	if shape is BoxShape3D:
 		var casted_shape = shape as BoxShape3D
-		var largest_side = max(casted_shape.size.x, casted_shape.size.y, casted_shape.size.z)
 		final_mesh = BoxMesh.new()
 		final_mesh.size = casted_shape.size
 		final_mesh.subdivide_width = subdivide_width
