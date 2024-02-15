@@ -158,3 +158,69 @@ static func calculate_required_force_for_speed_1d(
 			delta_force = max_force
 
 	return delta_force
+
+## Calculates the angular acceleration required to achieve the desired rotation. Works with Acceleration ForceMode.
+## Source: https://answers.unity.com/questions/48836/determining-the-torque-needed-to-rotate-an-object.html
+static func calculate_required_angular_acceleration_for_rotation(desired_rotation: Quaternion, rotation: Quaternion, angular_velocity: Vector3, timestep: float = 0.02, max_acceleration: float = Constants.FLOAT_MAX) -> Vector3:
+	var rot_diff: Quaternion = desired_rotation * rotation.inverse()
+	rot_diff = QuatHelpers.shorten(rot_diff)
+	var axis: Vector3 = rot_diff.get_axis().normalized()
+	var angle: float = rot_diff.get_angle()
+
+	var desired_angular_acceleration: Vector3 = (axis * angle) / (timestep * timestep)
+
+	return VectorHelpers.max_mag((desired_angular_acceleration - (angular_velocity / timestep)), max_acceleration)
+
+## Calculates the torque required to be applied to a rigidbody to achieve the desired rotation
+## Source: https://answers.unity.com/questions/48836/determining-the-torque-needed-to-rotate-an-object.html
+static func calculate_required_torque_for_rotation(
+	desired_rotation: Quaternion,
+	rotation: Quaternion,
+	angular_velocity: Vector3,
+	inertia_tensor: Vector3,
+	inertia_tensor_rotation:
+	Quaternion, timestep:
+	float = 0.02,
+	max_torque: float = Constants.FLOAT_MAX
+) -> Vector3:
+	var rot_diff: Quaternion = desired_rotation * rotation.inverse()
+	rot_diff = QuatHelpers.shorten(rot_diff)
+	var axis: Vector3 = rot_diff.get_axis().normalized()
+	var angle: float = rot_diff.get_angle()
+
+	var desired_angular_velocity: Vector3 = (axis * angle) / timestep
+	
+	return PhysicsHelpers.calculate_torque_for_angular_velocity(desired_angular_velocity, rotation, angular_velocity, inertia_tensor, inertia_tensor_rotation, timestep, max_torque)
+## Calculates the torque required to be applied to a rigidbody to achieve the desired rotation
+## Source: https://answers.unity.com/questions/48836/determining-the-torque-needed-to-rotate-an-object.html
+static func calculate_required_torque_for_rotation_2(rigidbody: RigidBody3D, desired_rotation: Quaternion, timestep: float = 0.02, max_torque: float = Constants.FLOAT_MAX) -> Vector3:
+	var inertia_tensor_basis = PhysicsServer3D.body_get_direct_state(rigidbody.get_rid()).inverse_inertia_tensor.inverse()
+	var scale = inertia_tensor_basis.get_scale()
+	var rotation = inertia_tensor_basis.get_rotation_quaternion()
+	return PhysicsHelpers.calculate_required_torque_for_rotation(desired_rotation, rigidbody.quaternion, rigidbody.angular_velocity, scale, rotation, timestep, max_torque)
+
+## Calculates the torque required to be applied to a rigidbody to achieve the angular velocity
+## Source: https://answers.unity.com/questions/48836/determining-the-torque-needed-to-rotate-an-object.html
+static func calculate_torque_for_angular_velocity(
+	desired_angular_velocity: Vector3,
+	rotation: Quaternion,
+	angular_velocity: Vector3,
+	inertia_tensor: Vector3,
+	inertia_tensor_rotation: Quaternion,
+	timestep: float = 0.02,
+	max_torque: float = Constants.FLOAT_MAX
+) -> Vector3:
+	var q: Quaternion = rotation * inertia_tensor_rotation
+	var t: Vector3 = q * (inertia_tensor * (q.inverse() * (desired_angular_velocity / timestep)))
+	var prev_t: Vector3 = q * (inertia_tensor * (q.inverse() * (angular_velocity / timestep)))
+
+	var delta_t = t - prev_t
+
+	return VectorHelpers.max_mag(delta_t, max_torque)
+## Calculates the torque required to be applied to a rigidbody to achieve the angular velocity
+## Source: https://answers.unity.com/questions/48836/determining-the-torque-needed-to-rotate-an-object.html
+static func calculate_torque_for_angular_velocity_2(rigidbody: RigidBody3D, desired_angular_velocity: Vector3, timestep: float = 0.02, max_torque: float = Constants.FLOAT_MAX) -> Vector3:
+	var inertia_tensor_basis = PhysicsServer3D.body_get_direct_state(rigidbody.get_rid()).inverse_inertia_tensor.inverse()
+	var scale = inertia_tensor_basis.get_scale()
+	var rotation = inertia_tensor_basis.get_rotation_quaternion()
+	return PhysicsHelpers.calculate_torque_for_angular_velocity(desired_angular_velocity, rigidbody.quaternion, rigidbody.angular_velocity, scale, rotation, timestep, max_torque)
