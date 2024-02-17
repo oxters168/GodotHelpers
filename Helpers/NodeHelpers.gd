@@ -26,7 +26,9 @@ static func get_child_of_type(current: Node, child_type, include_self = true, in
 			return child
 	if include_all_descendants:
 		for child in immediate_children:
-			return get_child_of_type(child, child_type, false)
+			var result = get_child_of_type(child, child_type, false)
+			if result != null:
+				return result
 	return null
 ## Returns an array of all children with the given type
 static func get_children_of_type(current: Node, child_type, include_self = true, include_all_descendants = true):
