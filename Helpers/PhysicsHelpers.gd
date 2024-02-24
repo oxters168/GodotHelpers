@@ -224,3 +224,65 @@ static func calculate_torque_for_angular_velocity_2(rigidbody: RigidBody3D, desi
 	var scale = inertia_tensor_basis.get_scale()
 	var rotation = inertia_tensor_basis.get_rotation_quaternion()
 	return PhysicsHelpers.calculate_torque_for_angular_velocity(desired_angular_velocity, rigidbody.quaternion, rigidbody.angular_velocity, scale, rotation, timestep, max_torque)
+
+## Creates a [RigidBody3D] box with the given parameters
+static func create_rigidbody3d_box(
+	with_renderer: bool = false,
+	size: Vector3 = Vector3.ONE,
+	pos_offset: Vector3 = Vector3.ZERO,
+	rot_offset: Quaternion = Quaternion.IDENTITY,
+	color: Color = Color.WHITE
+) -> RigidBody3D:
+	var rigidbody = RigidBody3D.new()
+
+	var shape = BoxShape3D.new()
+	shape.size = size
+	var collider = CollisionShape3D.new()
+	collider.shape = shape
+	collider.transform = Transform3D(Basis(rot_offset), pos_offset)
+	rigidbody.add_child(collider)
+
+	if with_renderer:
+		var mesh = BoxMesh.new()
+		mesh.size = size
+		var renderer = MeshInstance3D.new()
+		renderer.mesh = mesh
+		renderer.transform = Transform3D(Basis(rot_offset), pos_offset)
+		var mat = StandardMaterial3D.new()
+		mat.albedo_color = color
+		renderer.material_override = mat
+		rigidbody.add_child(renderer)
+
+	return rigidbody
+## Creates a [RigidBody3D] capsule with the given parameters
+static func create_rigidbody3d_capsule(
+	with_renderer: bool = false,
+	radius: float = 0.5,
+	height: float = 2,
+	pos_offset: Vector3 = Vector3.ZERO,
+	rot_offset: Quaternion = Quaternion.IDENTITY,
+	color: Color = Color.WHITE
+) -> RigidBody3D:
+	var rigidbody = RigidBody3D.new()
+
+	var shape = CapsuleShape3D.new()
+	shape.radius = radius
+	shape.height = height
+	var collider = CollisionShape3D.new()
+	collider.shape = shape
+	collider.transform = Transform3D(Basis(rot_offset), pos_offset)
+	rigidbody.add_child(collider)
+
+	if with_renderer:
+		var mesh = CapsuleMesh.new()
+		mesh.radius = radius
+		mesh.height = height
+		var renderer = MeshInstance3D.new()
+		renderer.mesh = mesh
+		renderer.transform = Transform3D(Basis(rot_offset), pos_offset)
+		var mat = StandardMaterial3D.new()
+		mat.albedo_color = color
+		renderer.material_override = mat
+		rigidbody.add_child(renderer)
+
+	return rigidbody
