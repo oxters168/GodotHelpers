@@ -40,3 +40,10 @@ static func poll_axis_angle(rot: Quaternion, axis: Vector3, axis_normal: Vector3
 	# Get angle between original vector and projected transform to get angle around normal
 	var angle: float = acos(axis_normal.dot(flattened))
 	return angle
+
+## Converts a rotation from the local space of the parent to a rotation in the same space the parent is currently in
+static func to_global(parent_global_rot: Quaternion, local_rotation: Quaternion):
+	return parent_global_rot * local_rotation
+## Converts a rotation existing in the same space as the parent into a rotation in the local space of the parent
+static func to_local(parent_global_rot: Quaternion, global_rotation: Quaternion):
+	return parent_global_rot.inverse() * global_rotation
