@@ -75,3 +75,10 @@ static func max_mag2(vec: Vector2, max_magnitude: float):
 	if vec.length_squared() > max_magnitude * max_magnitude:
 			vec = vec.normalized() * max_magnitude
 	return vec
+
+## Checks if [param point] is within the segment defined by [param segment_start] and [param segment_end]
+## Source: https://github.com/t-mw/citygen-godot/blob/master/scripts/math.gd
+static func is_point_in_segment_range(point: Vector2, segment_start: Vector2, segment_end: Vector2) -> bool:
+	var vec := segment_end - segment_start
+	var dot := (point - segment_start).dot(vec)
+	return dot >= 0 && dot <= vec.length_squared()
