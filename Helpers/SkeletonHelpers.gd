@@ -44,10 +44,10 @@ static func fabrik_solve_3d(
 	var total_reach_length: float = segment_lengths.reduce(func(accum, length): return accum + length)
 	var target_base_diff: Vector3 = target_point - base_point
 	# if there are no angular constraints and target is too far to reach then set resulting positions to be in a straight line to the target
-	if angle_constraints.size() <= 0 && total_reach_length * total_reach_length < target_base_diff.length_squared():
+	if angle_constraints.size() <= 0 && (total_reach_length * total_reach_length) < target_base_diff.length_squared():
 		var target_base_dir: Vector3 = target_base_diff.normalized()
 		current_positions[0] = base_point
-		for i in range(segment_positions.size(), 1, 1):
+		for i in range(1, segment_positions.size()):
 			current_positions[i] = current_positions[i - 1] + target_base_dir * segment_lengths[i - 1]
 	else:
 		# append an extra point to represent the target
