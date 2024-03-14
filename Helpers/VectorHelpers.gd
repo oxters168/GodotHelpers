@@ -82,3 +82,16 @@ static func is_point_in_segment_range(point: Vector2, segment_start: Vector2, se
 	var vec := segment_end - segment_start
 	var dot := (point - segment_start).dot(vec)
 	return dot >= 0 && dot <= vec.length_squared()
+
+## Calculates two vectors that are orthogonal to the given [param vector] and themselves. The resulting dictionary contains two
+## vector values called [member normal_1] and [member normal_2].
+## Source: https://stackoverflow.com/a/4341489
+static func get_ortho_normals(vector: Vector3) -> Dictionary:
+	var result: Dictionary = {}
+	var w = Quaternion.from_euler(Vector3(PI / 2, 0, 0)) * vector
+	if abs(vector.dot(w)) > 0.6:
+		w = Quaternion.from_euler(Vector3(0, PI / 2, 0)) * vector
+	w = w.normalized()
+	result["normal_1"] = vector.cross(w).normalized()
+	result["normal_2"] = vector.cross(result.normal_1).normalized()
+	return result

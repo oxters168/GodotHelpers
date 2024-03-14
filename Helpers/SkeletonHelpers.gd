@@ -18,6 +18,13 @@ static func set_bone3d_global_rotation(skeleton: Skeleton3D, bone_id: int, globa
 	# DebugDraw.draw_axes(Transform3D(Basis(bone_global_rotation), skeleton.to_global(skeleton.get_bone_global_pose(bone_id).origin)), 0.3)
 	# DebugDraw.draw_axes(Transform3D(Basis(bone_local_rot), skeleton.to_global(skeleton.get_bone_global_pose(bone_id).origin)), 0.3)
 
+## Angular constraint data for fabrik solver
+class FabrikConstraint3D:
+	var lower_limit: Vector3
+	var upper_limit: Vector3
+	func _init(lower_limit_: Vector3, upper_limit_: Vector3):
+		lower_limit = lower_limit_
+		upper_limit = upper_limit_
 ## Calculates the directions needed to set up the given segments to reach towards the [param target_point] from the [param base_point] using forwards and backwards reaching inverse kinematics.
 ## [param segment_positions] is the array containing the current base positions of the segments. The output array contains direction vectors for how to orient the segments. The first
 ## value in this array represents the direction of the first segment starting from the [param base_point], the second direction would be the orientation of the next segment whose base position
@@ -28,52 +35,62 @@ static func set_bone3d_global_rotation(skeleton: Skeleton3D, bone_id: int, globa
 static func fabrik_solve_3d(
 	base_point: Vector3,
 	target_point: Vector3,
-	segment_positions: Array[Vector3],
+	segment_transforms: Array[Transform3D],
 	segment_lengths: Array[float],
 	max_iterations: int = 16,
 	distance_margin_error: float = 0.01,
-	angle_constraints: Array[Vector3] = []
-) -> Array[Vector3]:
-	assert(segment_lengths.size() == segment_positions.size(), "FABRIK solver received incorrect amount of segment lengths")
-	assert(angle_constraints.size() == 0 || angle_constraints.size() == segment_positions.size(), "FABRIK solver received incorrect amount of angle constraints")
+	angle_constraints: Array[FabrikConstraint3D] = []
+) -> Array[Transform3D]:
+	assert(segment_lengths.size() == segment_transforms.size(), "FABRIK solver received incorrect amount of segment lengths")
+	assert(angle_constraints.size() == 0 || angle_constraints.size() == segment_transforms.size(), "FABRIK solver received incorrect amount of angle constraints")
 
 	# var result_dirs: Array[Vector3] = []
 	# result_dirs.resize(segment_lengths.size())
-	var current_positions: Array[Vector3] = segment_positions.duplicate()
+	var current_transforms: Array[Transform3D] = []
+	for segment_transform in segment_transforms:
+		current_transforms.append(Transform3D(segment_transform))
 
 	var total_reach_length: float = segment_lengths.reduce(func(accum, length): return accum + length)
 	var target_base_diff: Vector3 = target_point - base_point
 	# if there are no angular constraints and target is too far to reach then set resulting positions to be in a straight line to the target
 	if angle_constraints.size() <= 0 && (total_reach_length * total_reach_length) < target_base_diff.length_squared():
 		var target_base_dir: Vector3 = target_base_diff.normalized()
-		current_positions[0] = base_point
-		for i in range(1, segment_positions.size()):
-			current_positions[i] = current_positions[i - 1] + target_base_dir * segment_lengths[i - 1]
+		var ortho_normals: Dictionary = VectorHelpers.get_ortho_normals(target_base_dir)
+		var straight_basis: Basis = Basis(ortho_normals.normal_1, ortho_normals.normal_2, target_base_dir)
+		current_transforms[0].basis = straight_basis
+		current_transforms[0].origin = base_point
+		for i in range(1, segment_transforms.size()):
+			current_transforms[i].basis = straight_basis
+			current_transforms[i].origin = current_transforms[i - 1].origin + target_base_dir * segment_lengths[i - 1]
 	else:
 		# append an extra point to represent the target
-		current_positions.append(target_point)
+		current_transforms.append(Transform3D(Basis(), target_point))
 
 		var sqr_dist_margin: float = distance_margin_error * distance_margin_error
 		var current_sqr_distance: float = Constants.FLOAT_MAX
 		var current_iteration: int = 0
 		while current_sqr_distance > sqr_dist_margin && current_iteration < max_iterations:
 			# backwards pass
-			current_positions[current_positions.size() - 1] = target_point
-			for i in range(current_positions.size() - 1, 0, -1):
-				var joint_a: Vector3 = current_positions[i]
-				var joint_b: Vector3 = current_positions[i - 1]
+			current_transforms[current_transforms.size() - 1].origin = target_point
+			for i in range(current_transforms.size() - 1, 0, -1):
+				var joint_a: Vector3 = current_transforms[i].origin
+				var joint_b: Vector3 = current_transforms[i - 1].origin
 				var dir = (joint_b - joint_a).normalized()
-				current_positions[i - 1] = joint_a + dir * segment_lengths[i - 1]
+				var ortho_normals: Dictionary = VectorHelpers.get_ortho_normals(-dir)
+				current_transforms[i - 1].origin = joint_a + dir * segment_lengths[i - 1]
+				current_transforms[i - 1].basis = Basis(ortho_normals.normal_1, ortho_normals.normal_2, -dir)
 			# forwards pass
-			current_positions[0] = base_point
-			for i in (current_positions.size() - 1):
-				var joint_a: Vector3 = current_positions[i]
-				var joint_b: Vector3 = current_positions[i + 1]
+			current_transforms[0].origin = base_point
+			for i in (current_transforms.size() - 1):
+				var joint_a: Vector3 = current_transforms[i].origin
+				var joint_b: Vector3 = current_transforms[i + 1].origin
 				var dir = (joint_b - joint_a).normalized()
-				current_positions[i + 1] = joint_a + dir * segment_lengths[i]
+				var ortho_normals: Dictionary = VectorHelpers.get_ortho_normals(dir)
+				current_transforms[i + 1].origin = joint_a + dir * segment_lengths[i]
+				current_transforms[i].basis = Basis(ortho_normals.normal_1, ortho_normals.normal_2, dir)
 
-			current_sqr_distance = (current_positions[current_positions.size() - 1] - target_point).length_squared()
+			current_sqr_distance = (current_transforms[current_transforms.size() - 1].origin - target_point).length_squared()
 			current_iteration += 1
-		current_positions.remove_at(current_positions.size() - 1)
+		current_transforms.remove_at(current_transforms.size() - 1)
 
-	return current_positions
+	return current_transforms

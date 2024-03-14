@@ -25,23 +25,18 @@ func _process(_delta):
 			_create_target_sphere()
 		_target_sphere.global_position = target.global_position
 
-		var segment_positions: Array[Vector3] = []
-		segment_positions.resize(segment_count)
+		var segment_transforms: Array[Transform3D] = []
+		segment_transforms.resize(segment_count)
 		var segment_lengths: Array[float] = []
 		segment_lengths.resize(segment_count)
 		for i in segment_count:
-			segment_positions[i] = _segments[i].global_position + NodeHelpers.get_global_forward(_segments[i]) * (segment_length / 2)
+			segment_transforms[i] = Transform3D(_segments[i].basis, _segments[i].global_position - NodeHelpers.get_global_forward(_segments[i]) * (segment_length / 2))
 			segment_lengths[i] = segment_length
-		var positions = SkeletonHelpers.fabrik_solve_3d(global_position, target.global_position, segment_positions, segment_lengths, max_iterations, distance_error_margin)
+		var result_transforms = SkeletonHelpers.fabrik_solve_3d(global_position, target.global_position, segment_transforms, segment_lengths, max_iterations, distance_error_margin)
 		
-		for i in range(segment_count - 1, -1, -1):
-			var base_position = positions[i]
-			_segments[i].global_position = base_position
-			var target_pos = target.global_position
-			if i < segment_count - 1:
-				target_pos = positions[i + 1]
-			_segments[i].look_at(target_pos)
-			_segments[i].global_position = base_position - NodeHelpers.get_global_forward(_segments[i]) * (segment_length / 2)
+		for i in _segments.size():
+			_segments[i].basis = result_transforms[i].basis
+			_segments[i].global_position = result_transforms[i].origin + NodeHelpers.get_global_forward(_segments[i]) * (segment_length / 2)
 	else:
 		_destroy_segments()
 		_destroy_target_sphere()
