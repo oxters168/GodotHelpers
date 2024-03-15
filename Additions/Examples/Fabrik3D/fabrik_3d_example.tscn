@@ -21,4 +21,4 @@ script = ExtResource("1_cufi3")
 target = NodePath("../Target")
 
 [node name="Target" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.56916, 1.05357, 1.55734)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.769804, 0.601285, 2.53326)

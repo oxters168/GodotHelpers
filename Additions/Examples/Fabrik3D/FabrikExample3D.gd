@@ -29,14 +29,22 @@ func _process(_delta):
 		segment_transforms.resize(segment_count)
 		var segment_lengths: Array[float] = []
 		segment_lengths.resize(segment_count)
+		var segment_constraints: Array[SkeletonHelpers.FabrikConstraint3D] = []
+		segment_constraints.resize(segment_count)
 		for i in segment_count:
-			segment_transforms[i] = Transform3D(_segments[i].basis, _segments[i].global_position - NodeHelpers.get_global_forward(_segments[i]) * (segment_length / 2))
+			segment_transforms[i] = Transform3D(_segments[i].global_basis, _segments[i].global_position - NodeHelpers.get_global_forward(_segments[i]) * (segment_length / 2))
 			segment_lengths[i] = segment_length
-		var result_transforms = SkeletonHelpers.fabrik_solve_3d(global_position, target.global_position, segment_transforms, segment_lengths, max_iterations, distance_error_margin)
+			segment_constraints[i] = SkeletonHelpers.FabrikConstraint3D.new(Vector3(deg_to_rad(-45), deg_to_rad(-30), deg_to_rad(-15)), Vector3(deg_to_rad(45), deg_to_rad(30), deg_to_rad(15)))
+			# segment_constraints[i] = SkeletonHelpers.FabrikConstraint3D.new(Vector3(deg_to_rad(-180), deg_to_rad(-180), deg_to_rad(-180)), Vector3(deg_to_rad(180), deg_to_rad(180), deg_to_rad(180)))
+		var result_transforms = SkeletonHelpers.fabrik_solve_3d(global_position, target.global_position, segment_transforms, segment_lengths, max_iterations, distance_error_margin, segment_constraints)
 		
 		for i in _segments.size():
-			_segments[i].basis = result_transforms[i].basis
+			_segments[i].global_basis = result_transforms[i].basis
 			_segments[i].global_position = result_transforms[i].origin + NodeHelpers.get_global_forward(_segments[i]) * (segment_length / 2)
+			if !Engine.is_editor_hint():
+				var euler_raw: Vector3 = _segments[i].basis.get_euler()
+				var euler: Vector3 = Vector3(rad_to_deg(euler_raw.x), rad_to_deg(euler_raw.y), rad_to_deg(euler_raw.z))
+				DebugDraw.set_text(str(i), euler)
 	else:
 		_destroy_segments()
 		_destroy_target_sphere()
