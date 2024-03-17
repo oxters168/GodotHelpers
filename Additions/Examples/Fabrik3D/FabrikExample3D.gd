@@ -7,16 +7,75 @@ class_name FabrikExample3D
 @export var distance_error_margin: float = 0.01
 @export var segment_count: int = 3:
 	set(value):
-		segment_count = value
+		segment_count = max(value, 1)
 		_reset_segments()
+		_refresh_constraints()
+		notify_property_list_changed()
 @export var segment_length: float = 1:
 	set(value):
-		segment_length = value
+		segment_length = max(value, 0.01)
 		_reset_segments()
+@export var constrained: bool = false:
+	set(value):
+		constrained = value
+		notify_property_list_changed()
 
+var _constraints: Array[AngularLimits3D]
 var _segments: Array[Node3D] = []
 var _target_sphere: Node3D = null
 
+func _get_property_list():
+	var property_list: Array = []
+	if constrained:
+		property_list.append({
+			name = "Constraints",
+			type = TYPE_NIL,
+			usage = PROPERTY_USAGE_CATEGORY
+		})
+		for i in _constraints.size():
+			property_list.append({
+				name = str("Segment ", i),
+				type = TYPE_NIL,
+				usage = PROPERTY_USAGE_SUBGROUP
+			})
+			property_list.append({
+				name = _get_lower_limit_name(i),
+				type = TYPE_VECTOR3,
+				usage = PROPERTY_USAGE_DEFAULT
+			})
+			property_list.append({
+				name = _get_upper_limit_name(i),
+				type = TYPE_VECTOR3,
+				usage = PROPERTY_USAGE_DEFAULT
+			})
+	return property_list
+func _get(property: StringName):
+	for i in _constraints.size():
+		if property == _get_lower_limit_name(i):
+			return Vector3(rad_to_deg(_constraints[i].lower_limit.x), rad_to_deg(_constraints[i].lower_limit.y), rad_to_deg(_constraints[i].lower_limit.z))
+		if property == _get_upper_limit_name(i):
+			return Vector3(rad_to_deg(_constraints[i].upper_limit.x), rad_to_deg(_constraints[i].upper_limit.y), rad_to_deg(_constraints[i].upper_limit.z))
+func _set(property: StringName, value: Variant):
+	for i in _constraints.size():
+		if property == _get_lower_limit_name(i):
+			_constraints[i].lower_limit = Vector3(wrapf(deg_to_rad(value.x), -PI, 0 + 0.0001), wrapf(deg_to_rad(value.y), -PI, 0 + 0.0001), wrapf(deg_to_rad(value.z), -PI, 0 + 0.0001))
+		if property == _get_upper_limit_name(i):
+			_constraints[i].upper_limit = Vector3(wrapf(deg_to_rad(value.x), 0, PI + 0.0001), wrapf(deg_to_rad(value.y), 0, PI + 0.0001), wrapf(deg_to_rad(value.z), 0, PI + 0.0001))
+func _property_get_revert(property: StringName):
+	for i in _constraints.size():
+		if property == _get_lower_limit_name(i):
+			return Vector3.ONE * -180
+		if property == _get_upper_limit_name(i):
+			return Vector3.ONE * 180
+func _property_can_revert(property: StringName):
+	for i in _constraints.size():
+		if property == _get_lower_limit_name(i):
+			return true
+		if property == _get_upper_limit_name(i):
+			return true
+
+func _ready():
+	_refresh_constraints()
 func _process(_delta):
 	if target != null:
 		if _segments.size() != segment_count:
@@ -29,14 +88,14 @@ func _process(_delta):
 		segment_transforms.resize(segment_count)
 		var segment_lengths: Array[float] = []
 		segment_lengths.resize(segment_count)
-		var segment_constraints: Array[SkeletonHelpers.FabrikConstraint3D] = []
-		segment_constraints.resize(segment_count)
 		for i in segment_count:
 			segment_transforms[i] = Transform3D(_segments[i].global_basis, _segments[i].global_position - NodeHelpers.get_global_forward(_segments[i]) * (segment_length / 2))
 			segment_lengths[i] = segment_length
-			segment_constraints[i] = SkeletonHelpers.FabrikConstraint3D.new(Vector3(deg_to_rad(-45), deg_to_rad(-30), deg_to_rad(-15)), Vector3(deg_to_rad(45), deg_to_rad(30), deg_to_rad(15)))
-			# segment_constraints[i] = SkeletonHelpers.FabrikConstraint3D.new(Vector3(deg_to_rad(-180), deg_to_rad(-180), deg_to_rad(-180)), Vector3(deg_to_rad(180), deg_to_rad(180), deg_to_rad(180)))
-		var result_transforms = SkeletonHelpers.fabrik_solve_3d(global_position, target.global_position, segment_transforms, segment_lengths, max_iterations, distance_error_margin, segment_constraints)
+		var result_transforms: Array[Transform3D]
+		if constrained:
+			result_transforms = SkeletonHelpers.fabrik_solve_3d(global_position, target.global_position, segment_transforms, segment_lengths, max_iterations, distance_error_margin, _constraints)
+		else:
+			result_transforms = SkeletonHelpers.fabrik_solve_3d(global_position, target.global_position, segment_transforms, segment_lengths, max_iterations, distance_error_margin)
 		
 		for i in _segments.size():
 			_segments[i].global_basis = result_transforms[i].basis
@@ -70,3 +129,18 @@ func _destroy_target_sphere():
 func _create_target_sphere():
 	_target_sphere = MeshHelpers.create_sphere_3d(0.06, 0.12)
 	add_child(_target_sphere)
+
+func _get_lower_limit_name(index: int) -> String:
+	return str("segment_", index, "_lower_limit")
+func _get_upper_limit_name(index: int) -> String:
+	return str("segment_", index, "_upper_limit")
+func _refresh_constraints():
+	if _constraints == null || _constraints.size() != segment_count:
+		var old_constraints = _constraints
+		_constraints = []
+		_constraints.resize(segment_count)
+		for i in segment_count:
+			if old_constraints != null && i < old_constraints.size():
+				_constraints[i] = old_constraints[i]
+			else:
+				_constraints[i] = AngularLimits3D.new(Vector3.ONE * -PI, Vector3.ONE * PI)

@@ -18,13 +18,6 @@ static func set_bone3d_global_rotation(skeleton: Skeleton3D, bone_id: int, globa
 	# DebugDraw.draw_axes(Transform3D(Basis(bone_global_rotation), skeleton.to_global(skeleton.get_bone_global_pose(bone_id).origin)), 0.3)
 	# DebugDraw.draw_axes(Transform3D(Basis(bone_local_rot), skeleton.to_global(skeleton.get_bone_global_pose(bone_id).origin)), 0.3)
 
-## Angular constraint data for fabrik solver
-class FabrikConstraint3D:
-	var lower_limit: Vector3
-	var upper_limit: Vector3
-	func _init(lower_limit_: Vector3, upper_limit_: Vector3):
-		lower_limit = lower_limit_
-		upper_limit = upper_limit_
 ## Calculates the global transforms needed to set up the given segments to reach towards the [param target_point] from the [param base_point] using forwards and backwards reaching inverse kinematics.
 ## [param segment_transforms] is the array containing the current base global transforms of the segments. The output array contains the new global transforms for how to place the segments. The first
 ## value in this array represents the base position and orientation of the first segment starting from the [param base_point], the second value would be the transform of the next segment whose base
@@ -33,7 +26,7 @@ class FabrikConstraint3D:
 ## [param distance_margin_error] is how far the minimum distance the last joint needs to reach from [param target_point] to be considered a successful fabrik solution and end the solve loop.
 ## [param max_iterations] is the maximum amount of times to run the fabrik solver before [param distance_margin_error] is reached. The [param angle_constraints] is also the same length as [param segment_transforms]
 ## and contains the lower and upper angular limits for each joint in their local spacial axes in radians (should be between -PI and PI). If [param angle_constraints] is not provided then the solver
-## will have no angular limits. [param base_basis] is only needed if [param angle_constraints] is provided and is the global basis of the parent node of the first transform in [param segment_transforms].
+## will have no angular limits. [param root_basis] is only needed if [param angle_constraints] is provided and is the global basis of the parent node of the first transform in [param segment_transforms].
 ## Reference: https://www.youtube.com/watch?v=lJCeHXXPf5w
 static func fabrik_solve_3d(
 	base_point: Vector3,
@@ -42,8 +35,8 @@ static func fabrik_solve_3d(
 	segment_lengths: Array[float],
 	max_iterations: int = 16,
 	distance_margin_error: float = 0.01,
-	angle_constraints: Array[FabrikConstraint3D] = [],
-	base_basis: Basis = Basis()
+	angle_constraints: Array[AngularLimits3D] = [],
+	root_basis: Basis = Basis()
 ) -> Array[Transform3D]:
 	assert(segment_lengths.size() == segment_transforms.size(), "FABRIK solver received incorrect amount of segment lengths")
 	assert(angle_constraints.size() == 0 || angle_constraints.size() == segment_transforms.size(), "FABRIK solver received incorrect amount of angle constraints")
@@ -67,7 +60,7 @@ static func fabrik_solve_3d(
 			current_transforms[i].origin = current_transforms[i - 1].origin + target_base_dir * segment_lengths[i - 1]
 	else:
 		# create angle constrainer function
-		var constrain_angles = func(current_basis: Basis, parent_basis: Basis, constraints: FabrikConstraint3D):
+		var constrain_angles = func(current_basis: Basis, parent_basis: Basis, constraints: AngularLimits3D):
 			var local_euler: Vector3 = BasisHelpers.to_local(parent_basis, current_basis).get_euler()
 			local_euler = Vector3(wrapf(local_euler.x, -PI, PI), wrapf(local_euler.y, -PI, PI), wrapf(local_euler.z, -PI, PI))
 			var angle_x = clampf(local_euler.x, constraints.lower_limit.x, constraints.upper_limit.x)
@@ -95,8 +88,8 @@ static func fabrik_solve_3d(
 				var basis: Basis = Basis(right, up, dir)
 				
 				if angles_constrained:
-					var parent_basis: Basis = current_transforms[i - 2].basis if i > 1 else base_basis
-					var constraints: FabrikConstraint3D = angle_constraints[i - 1]
+					var parent_basis: Basis = current_transforms[i - 2].basis if i > 1 else root_basis
+					var constraints: AngularLimits3D = angle_constraints[i - 1]
 					basis = constrain_angles.call(basis, parent_basis, constraints)
 
 				current_transforms[i - 1].origin = joint_a + BasisHelpers.get_forward(basis) * segment_lengths[i - 1]
@@ -113,8 +106,8 @@ static func fabrik_solve_3d(
 				var basis: Basis = Basis(right, up, dir)
 
 				if angles_constrained:
-					var parent_basis: Basis = current_transforms[i - 1].basis if i > 0 else base_basis
-					var constraints: FabrikConstraint3D = angle_constraints[i]
+					var parent_basis: Basis = current_transforms[i - 1].basis if i > 0 else root_basis
+					var constraints: AngularLimits3D = angle_constraints[i]
 					basis = constrain_angles.call(basis, parent_basis, constraints)
 
 				current_transforms[i + 1].origin = joint_a + BasisHelpers.get_forward(basis) * segment_lengths[i]

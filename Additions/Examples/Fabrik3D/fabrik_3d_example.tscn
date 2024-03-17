@@ -8,12 +8,11 @@
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
 transform = Transform3D(0.707107, -0.5, 0.5, 2.4663e-16, 0.707107, 0.707107, -0.707107, -0.5, 0.5, 0, 0, 0)
 
-[node name="OrbitCamera" type="Camera3D" parent="." node_paths=PackedStringArray("target")]
+[node name="OrbitCamera" type="Camera3D" parent="."]
 script = ExtResource("1_te0uu")
 mouse_input = true
 distance = 3.0
 angle = Vector3(-15, 60, 2.08165e-12)
-target = NodePath("")
 debug = true
 
 [node name="FabrikExample3D" type="Node3D" parent="." node_paths=PackedStringArray("target")]
@@ -21,4 +20,4 @@ script = ExtResource("1_cufi3")
 target = NodePath("../Target")
 
 [node name="Target" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.769804, 0.601285, 2.53326)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52396, 1.47779, 2.04004)
