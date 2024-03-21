@@ -19,11 +19,13 @@ class_name FabrikExample3D
 	set(value):
 		constrained = value
 		notify_property_list_changed()
+@export var use_target_rot: bool = false
 
 var _constraints: Array[AngularLimits3D]
 var _segments: Array[Node3D] = []
 var _target_sphere: Node3D = null
 var _prev_target_pos: Vector3
+var _prev_target_rot: Basis
 
 func _get_property_list():
 	var property_list: Array = []
@@ -84,8 +86,9 @@ func _process(_delta):
 		if _target_sphere == null:
 			_create_target_sphere()
 		
-		if !_prev_target_pos.is_equal_approx(target.global_position):
+		if !_prev_target_pos.is_equal_approx(target.global_position) || !_prev_target_rot.is_equal_approx(target.global_basis):
 			_prev_target_pos = target.global_position
+			_prev_target_rot = target.global_basis
 			_target_sphere.global_position = target.global_position
 
 			var segment_transforms: Array[Transform3D] = []
@@ -97,9 +100,9 @@ func _process(_delta):
 				segment_lengths[i] = segment_length
 			var result_transforms: Array[Transform3D]
 			if constrained:
-				result_transforms = SkeletonHelpers.fabrik_solve_3d(global_position, target.global_position, segment_transforms, segment_lengths, max_iterations, distance_error_margin, _constraints)
+				result_transforms = SkeletonHelpers.fabrik_solve_3d(global_position, target.global_transform, segment_transforms, segment_lengths, use_target_rot, max_iterations, distance_error_margin, _constraints)
 			else:
-				result_transforms = SkeletonHelpers.fabrik_solve_3d(global_position, target.global_position, segment_transforms, segment_lengths, max_iterations, distance_error_margin)
+				result_transforms = SkeletonHelpers.fabrik_solve_3d(global_position, target.global_transform, segment_transforms, segment_lengths, use_target_rot, max_iterations, distance_error_margin)
 			
 			for i in _segments.size():
 				_segments[i].global_position = result_transforms[i].origin + BasisHelpers.get_forward(result_transforms[i].basis) * (segment_length / 2)

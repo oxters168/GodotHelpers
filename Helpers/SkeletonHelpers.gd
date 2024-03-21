@@ -30,13 +30,14 @@ static func set_bone3d_global_rotation(skeleton: Skeleton3D, bone_id: int, globa
 ## Reference: https://www.youtube.com/watch?v=lJCeHXXPf5w
 static func fabrik_solve_3d(
 	base_point: Vector3,
-	target_point: Vector3,
+	target_transform: Transform3D,
 	segment_transforms: Array[Transform3D],
 	segment_lengths: Array[float],
+	use_target_rot: bool = false,
 	max_iterations: int = 16,
 	distance_margin_error: float = 0.01,
 	angle_constraints: Array[AngularLimits3D] = [],
-	root_basis: Basis = Basis()
+	root_basis: Basis = Basis(),
 ) -> Array[Transform3D]:
 	assert(segment_lengths != null && segment_lengths.size() == segment_transforms.size(), "FABRIK solver received incorrect amount of segment lengths")
 	assert(angle_constraints == null || angle_constraints.size() == 0 || angle_constraints.size() == segment_transforms.size(), "FABRIK solver received incorrect amount of angle constraints")
@@ -47,10 +48,10 @@ static func fabrik_solve_3d(
 		current_transforms.append(Transform3D(segment_transform))
 
 	var total_reach_length: float = segment_lengths.reduce(func(accum, length): return accum + length)
-	var target_base_diff: Vector3 = target_point - base_point
+	var target_base_diff: Vector3 = target_transform.origin - base_point
 	var angles_constrained: bool = angle_constraints != null && angle_constraints.size() > 0
 	# if there are no angular constraints and target is too far to reach then set resulting positions to be in a straight line to the target
-	if !angles_constrained && (total_reach_length * total_reach_length) < target_base_diff.length_squared():
+	if !use_target_rot && !angles_constrained && (total_reach_length * total_reach_length) < target_base_diff.length_squared():
 		var target_base_dir: Vector3 = target_base_diff.normalized()
 		var ortho_normals: Dictionary = VectorHelpers.get_ortho_normals(target_base_dir)
 		var straight_basis: Basis = Basis(ortho_normals.normal_1, ortho_normals.normal_2, target_base_dir)
@@ -60,7 +61,7 @@ static func fabrik_solve_3d(
 			current_transforms[i].basis = straight_basis
 			current_transforms[i].origin = current_transforms[i - 1].origin + target_base_dir * segment_lengths[i - 1]
 	else:
-		# create angle constrainer function
+		# create angle constrainer function 
 		var constrain_angles = func(current_basis: Basis, parent_basis: Basis, constraints: AngularLimits3D) -> Basis:
 			var local_euler: Vector3 = BasisHelpers.to_local(parent_basis, current_basis).get_euler()
 			local_euler = Vector3(wrapf(local_euler.x, -PI, PI), wrapf(local_euler.y, -PI, PI), wrapf(local_euler.z, -PI, PI))
@@ -85,35 +86,40 @@ static func fabrik_solve_3d(
 			corrected_basis = BasisHelpers.to_global(parent_basis, Basis.from_euler(local_euler))
 			return corrected_basis
 		# create backwards pass function
-		var backwards_pass = func(start_point: Vector3, transforms: Array[Transform3D], angle_constraints_: Array[AngularLimits3D] = []) -> void:
-			transforms[transforms.size() - 1].origin = start_point
+		var backwards_pass = func(start_transform: Transform3D, transforms: Array[Transform3D], use_target_rot_: bool = false, angle_constraints_: Array[AngularLimits3D] = []) -> void:
+			transforms[transforms.size() - 1] = start_transform
 			for i in range(transforms.size() - 1, 0, -1):
 				var joint_a: Vector3 = transforms[i].origin
 				var joint_b: Vector3 = transforms[i - 1].origin
 				
 				var dir: Vector3 = (joint_b - joint_a).normalized()
-				var right: Vector3 = dir.cross(BasisHelpers.get_right(transforms[i - 1].basis)).normalized()
-				var up: Vector3 = dir.cross(right).normalized()
-				var basis: Basis = Basis(right, up, dir)
+				var right: Vector3 = (-dir).cross(BasisHelpers.get_right(transforms[i - 1].basis)).normalized()
+				var up: Vector3 = (-dir).cross(right).normalized()
+				var basis: Basis = Basis(right, up, -dir)
 				
 				if angle_constraints_ != null && angle_constraints_.size() > 0:
 					var parent_basis: Basis = transforms[i - 2].basis if i > 1 else root_basis
 					var constraints: AngularLimits3D = angle_constraints_[i - 1]
 					basis = constrain_angles.call(basis, parent_basis, constraints)
+				
+				if use_target_rot_ && i == transforms.size() - 1:
+					basis = basis.slerp(start_transform.basis, 0.5)
 
-				transforms[i - 1].origin = joint_a + BasisHelpers.get_forward(basis) * segment_lengths[i - 1]
+				transforms[i - 1].origin = joint_a + BasisHelpers.get_back(basis) * segment_lengths[i - 1]
 				transforms[i - 1].basis = basis
 		# create forwards pass function
-		var forwards_pass = func(start_point: Vector3, transforms: Array[Transform3D], angle_constraints_: Array[AngularLimits3D] = []) -> void:
+		var forwards_pass = func(start_point: Vector3, transforms: Array[Transform3D], angle_constraints_: Array[AngularLimits3D] = [], use_target_rot_: bool = false, target_rotation_: Basis = Basis()) -> void:
 			transforms[0].origin = start_point
 			for i in (transforms.size() - 1):
 				var joint_a: Vector3 = transforms[i].origin
 				var joint_b: Vector3 = transforms[i + 1].origin
 
-				var dir: Vector3 = (joint_b - joint_a).normalized()
-				var right: Vector3 = dir.cross(BasisHelpers.get_right(transforms[i + 1].basis)).normalized()
-				var up: Vector3 = dir.cross(right).normalized()
-				var basis: Basis = Basis(right, up, dir)
+				var basis: Basis = target_rotation_
+				if i < transforms.size() - 2 || !use_target_rot_:
+					var dir: Vector3 = (joint_b - joint_a).normalized()
+					var right: Vector3 = dir.cross(BasisHelpers.get_right(transforms[i + 1].basis)).normalized()
+					var up: Vector3 = dir.cross(right).normalized()
+					basis = Basis(right, up, dir)
 
 				if angle_constraints_ != null && angle_constraints_.size() > 0:
 					var parent_basis: Basis = transforms[i - 1].basis if i > 0 else root_basis
@@ -126,20 +132,20 @@ static func fabrik_solve_3d(
 		# backup the original segment transforms
 		var prev_transforms: Array[Transform3D] = current_transforms
 		# append an extra point to represent the target
-		current_transforms.append(Transform3D(Basis(Vector3.FORWARD, 90), target_point))
+		current_transforms.append(target_transform)
 
 		var sqr_dist_margin: float = distance_margin_error * distance_margin_error
 		var current_sqr_distance: float = Constants.FLOAT_MAX
 		var current_iteration: int = 0
 		while current_sqr_distance > sqr_dist_margin && current_iteration < max_iterations:
-			backwards_pass.call(target_point, current_transforms)
-			forwards_pass.call(base_point, current_transforms, angle_constraints)
-			current_sqr_distance = (current_transforms[current_transforms.size() - 1].origin - target_point).length_squared()
+			backwards_pass.call(target_transform, current_transforms, use_target_rot)
+			forwards_pass.call(base_point, current_transforms, angle_constraints, use_target_rot, target_transform.basis)
+			current_sqr_distance = (current_transforms[current_transforms.size() - 1].origin - target_transform.origin).length_squared()
 			current_iteration += 1
 		# remove the extra point we added earlier which represents the target
 		current_transforms.remove_at(current_transforms.size() - 1)
 		# if the solver did not improve on the previous given transforms, then restore them
-		if current_sqr_distance > (prev_transforms[prev_transforms.size() - 1].origin - target_point).length_squared():
+		if current_sqr_distance > (prev_transforms[prev_transforms.size() - 1].origin - target_transform.origin).length_squared():
 			current_transforms = prev_transforms
 
 	return current_transforms
