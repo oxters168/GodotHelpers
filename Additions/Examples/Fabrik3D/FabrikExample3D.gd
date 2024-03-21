@@ -23,6 +23,7 @@ class_name FabrikExample3D
 var _constraints: Array[AngularLimits3D]
 var _segments: Array[Node3D] = []
 var _target_sphere: Node3D = null
+var _prev_target_pos: Vector3
 
 func _get_property_list():
 	var property_list: Array = []
@@ -58,9 +59,9 @@ func _get(property: StringName):
 func _set(property: StringName, value: Variant):
 	for i in _constraints.size():
 		if property == _get_lower_limit_name(i):
-			_constraints[i].lower_limit = Vector3(wrapf(deg_to_rad(value.x), -PI, 0 + 0.0001), wrapf(deg_to_rad(value.y), -PI, 0 + 0.0001), wrapf(deg_to_rad(value.z), -PI, 0 + 0.0001))
+			_constraints[i].lower_limit = Vector3(wrapf(deg_to_rad(value.x), -PI, _constraints[i].upper_limit.x + 0.0001), wrapf(deg_to_rad(value.y), -PI, _constraints[i].upper_limit.y + 0.0001), wrapf(deg_to_rad(value.z), -PI, _constraints[i].upper_limit.z + 0.0001))
 		if property == _get_upper_limit_name(i):
-			_constraints[i].upper_limit = Vector3(wrapf(deg_to_rad(value.x), 0, PI + 0.0001), wrapf(deg_to_rad(value.y), 0, PI + 0.0001), wrapf(deg_to_rad(value.z), 0, PI + 0.0001))
+			_constraints[i].upper_limit = Vector3(wrapf(deg_to_rad(value.x), _constraints[i].lower_limit.x, PI + 0.0001), wrapf(deg_to_rad(value.y), _constraints[i].lower_limit.y, PI + 0.0001), wrapf(deg_to_rad(value.z), _constraints[i].lower_limit.z, PI + 0.0001))
 func _property_get_revert(property: StringName):
 	for i in _constraints.size():
 		if property == _get_lower_limit_name(i):
@@ -74,7 +75,7 @@ func _property_can_revert(property: StringName):
 		if property == _get_upper_limit_name(i):
 			return true
 
-func _ready():
+func _init():
 	_refresh_constraints()
 func _process(_delta):
 	if target != null:
@@ -82,28 +83,37 @@ func _process(_delta):
 			_reset_segments()
 		if _target_sphere == null:
 			_create_target_sphere()
-		_target_sphere.global_position = target.global_position
-
-		var segment_transforms: Array[Transform3D] = []
-		segment_transforms.resize(segment_count)
-		var segment_lengths: Array[float] = []
-		segment_lengths.resize(segment_count)
-		for i in segment_count:
-			segment_transforms[i] = Transform3D(_segments[i].global_basis, _segments[i].global_position - NodeHelpers.get_global_forward(_segments[i]) * (segment_length / 2))
-			segment_lengths[i] = segment_length
-		var result_transforms: Array[Transform3D]
-		if constrained:
-			result_transforms = SkeletonHelpers.fabrik_solve_3d(global_position, target.global_position, segment_transforms, segment_lengths, max_iterations, distance_error_margin, _constraints)
-		else:
-			result_transforms = SkeletonHelpers.fabrik_solve_3d(global_position, target.global_position, segment_transforms, segment_lengths, max_iterations, distance_error_margin)
 		
-		for i in _segments.size():
-			_segments[i].global_basis = result_transforms[i].basis
-			_segments[i].global_position = result_transforms[i].origin + NodeHelpers.get_global_forward(_segments[i]) * (segment_length / 2)
-			if !Engine.is_editor_hint():
-				var euler_raw: Vector3 = _segments[i].basis.get_euler()
+		if !_prev_target_pos.is_equal_approx(target.global_position):
+			_prev_target_pos = target.global_position
+			_target_sphere.global_position = target.global_position
+
+			var segment_transforms: Array[Transform3D] = []
+			segment_transforms.resize(segment_count)
+			var segment_lengths: Array[float] = []
+			segment_lengths.resize(segment_count)
+			for i in segment_count:
+				segment_transforms[i] = Transform3D(_segments[i].global_basis, _segments[i].global_position - NodeHelpers.get_global_forward(_segments[i]) * (segment_length / 2))
+				segment_lengths[i] = segment_length
+			var result_transforms: Array[Transform3D]
+			if constrained:
+				result_transforms = SkeletonHelpers.fabrik_solve_3d(global_position, target.global_position, segment_transforms, segment_lengths, max_iterations, distance_error_margin, _constraints)
+			else:
+				result_transforms = SkeletonHelpers.fabrik_solve_3d(global_position, target.global_position, segment_transforms, segment_lengths, max_iterations, distance_error_margin)
+			
+			for i in _segments.size():
+				_segments[i].global_position = result_transforms[i].origin + BasisHelpers.get_forward(result_transforms[i].basis) * (segment_length / 2)
+				_segments[i].global_basis = result_transforms[i].basis
+
+				var current_basis: Basis = _segments[i].basis
+				if i > 0:
+					current_basis = BasisHelpers.to_local(_segments[i - 1].basis, current_basis)
+				var euler_raw: Vector3 = current_basis.get_euler()
 				var euler: Vector3 = Vector3(rad_to_deg(euler_raw.x), rad_to_deg(euler_raw.y), rad_to_deg(euler_raw.z))
-				DebugDraw.set_text(str(i), euler)
+				# print_debug("Segment[", i, "]: ", euler)
+				if !Engine.is_editor_hint():
+					DebugDraw.set_text(str(i), euler)
+					DebugDraw.draw_axes(result_transforms[i], 0.2)
 	else:
 		_destroy_segments()
 		_destroy_target_sphere()

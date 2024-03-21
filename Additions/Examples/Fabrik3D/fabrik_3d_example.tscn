@@ -18,6 +18,13 @@ debug = true
 [node name="FabrikExample3D" type="Node3D" parent="." node_paths=PackedStringArray("target")]
 script = ExtResource("1_cufi3")
 target = NodePath("../Target")
+constrained = true
+segment_0_lower_limit = Vector3(2.08165e-12, 2.08165e-12, 2.08165e-12)
+segment_0_upper_limit = Vector3(2.08165e-12, 2.08165e-12, 2.08165e-12)
+segment_1_lower_limit = Vector3(-80, -30, -120)
+segment_1_upper_limit = Vector3(90, 150, 180)
+segment_2_lower_limit = Vector3(2.08165e-12, 2.08165e-12, 2.08165e-12)
+segment_2_upper_limit = Vector3(2.08165e-12, 90, 2.08165e-12)
 
 [node name="Target" type="Node3D" parent="."]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.52396, 1.47779, 2.04004)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.44804, 0.289079, 0.875453)
