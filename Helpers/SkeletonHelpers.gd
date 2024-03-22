@@ -18,12 +18,12 @@ static func set_bone3d_global_rotation(skeleton: Skeleton3D, bone_id: int, globa
 	# DebugDraw.draw_axes(Transform3D(Basis(bone_global_rotation), skeleton.to_global(skeleton.get_bone_global_pose(bone_id).origin)), 0.3)
 	# DebugDraw.draw_axes(Transform3D(Basis(bone_local_rot), skeleton.to_global(skeleton.get_bone_global_pose(bone_id).origin)), 0.3)
 
-## Calculates the global transforms needed to set up the given segments to reach towards the [param target_point] from the [param base_point] using forwards and backwards reaching inverse kinematics.
+## Calculates the global transforms needed to set up the given segments to reach towards the [param target_transform] from the [param base_point] using forwards and backwards reaching inverse kinematics.
 ## [param segment_transforms] is the array containing the current base global transforms of the segments. The output array contains the new global transforms for how to place the segments. The first
 ## value in this array represents the base position and orientation of the first segment starting from the [param base_point], the second value would be the transform of the next segment whose base
 ## position would be at the end of the first segment and whose orientation would face the next segment, and so on. The [param segment_lengths] array contains the length of each segment where the
 ## [param segment_transforms] array values make up the base of each segment. This means that [param segment_lengths] will always be the same size as [param segment_transforms].
-## [param distance_margin_error] is how far the minimum distance the last joint needs to reach from [param target_point] to be considered a successful fabrik solution and end the solve loop.
+## [param distance_margin_error] is how far the minimum distance the last joint needs to reach from [param target_transform] to be considered a successful fabrik solution and end the solve loop.
 ## [param max_iterations] is the maximum amount of times to run the fabrik solver before [param distance_margin_error] is reached. The [param angle_constraints] is also the same length as [param segment_transforms]
 ## and contains the lower and upper angular limits for each joint in their local spacial axes in radians (should be between -PI and PI). If [param angle_constraints] is not provided then the solver
 ## will have no angular limits. [param root_basis] is only needed if [param angle_constraints] is provided and is the global basis of the parent node of the first transform in [param segment_transforms].

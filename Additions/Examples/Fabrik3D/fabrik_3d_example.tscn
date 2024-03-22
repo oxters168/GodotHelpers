@@ -18,7 +18,6 @@ debug = true
 [node name="FabrikExample3D" type="Node3D" parent="." node_paths=PackedStringArray("target")]
 script = ExtResource("1_cufi3")
 target = NodePath("../Target")
-use_target_rot = true
 
 [node name="Target" type="Node3D" parent="."]
-transform = Transform3D(-0.103487, -0.780905, -0.616018, 0.984734, -0.167595, 0.0470246, -0.139963, -0.601747, 0.786328, 0.356968, 1.27129, 0.567192)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.333848, 0.917692, 1.37011)
