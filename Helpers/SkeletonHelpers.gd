@@ -92,19 +92,18 @@ static func fabrik_solve_3d(
 				var joint_a: Vector3 = transforms[i].origin
 				var joint_b: Vector3 = transforms[i - 1].origin
 				
-				var dir: Vector3 = (joint_b - joint_a).normalized()
-				var right: Vector3 = (-dir).cross(BasisHelpers.get_right(transforms[i - 1].basis)).normalized()
-				var up: Vector3 = (-dir).cross(right).normalized()
-				var basis: Basis = Basis(right, up, -dir)
+				var basis: Basis = start_transform.basis
+				if !use_target_rot_ || i < transforms.size() - 1:
+					var dir: Vector3 = (joint_b - joint_a).normalized()
+					var right: Vector3 = (-dir).cross(BasisHelpers.get_right(transforms[i - 1].basis)).normalized()
+					var up: Vector3 = (-dir).cross(right).normalized()
+					basis = Basis(right, up, -dir)
 				
 				if angle_constraints_ != null && angle_constraints_.size() > 0:
 					var parent_basis: Basis = transforms[i - 2].basis if i > 1 else root_basis
 					var constraints: AngularLimits3D = angle_constraints_[i - 1]
 					basis = constrain_angles.call(basis, parent_basis, constraints)
 				
-				if use_target_rot_ && i == transforms.size() - 1:
-					basis = basis.slerp(start_transform.basis, 0.5)
-
 				transforms[i - 1].origin = joint_a + BasisHelpers.get_back(basis) * segment_lengths[i - 1]
 				transforms[i - 1].basis = basis
 		# create forwards pass function
