@@ -56,19 +56,19 @@ static func collision_shape_to_mesh(shape: Shape3D, subdivide_width: int = 0, su
 	return final_mesh
 
 ## Returns a MeshInstance3D object whose mesh is a box with the given size and material
-static func create_box_3d(size: Vector3 = Vector3.ONE, mat: Material = null):
-	var tile := MeshInstance3D.new()
+static func create_box_3d(size: Vector3 = Vector3.ONE, mat: Material = null) -> MeshInstance3D:
+	var box := MeshInstance3D.new()
 	var box_mesh := BoxMesh.new()
 	box_mesh.size = size
-	tile.mesh = box_mesh
-	tile.material_override = mat
-	return tile
+	box.mesh = box_mesh
+	box.material_override = mat
+	return box
 ## Returns a MeshInstance3D object whose mesh is a sphere with the given radius, height, and material
-static func create_sphere_3d(radius: float = 0.5, height: float = 1, mat: Material = null):
-	var tile := MeshInstance3D.new()
+static func create_sphere_3d(radius: float = 0.5, height: float = 1, mat: Material = null) -> MeshInstance3D:
+	var sphere := MeshInstance3D.new()
 	var sphere_mesh := SphereMesh.new()
 	sphere_mesh.radius = radius
 	sphere_mesh.height = height
-	tile.mesh = sphere_mesh
-	tile.material_override = mat
-	return tile
+	sphere.mesh = sphere_mesh
+	sphere.material_override = mat
+	return sphere

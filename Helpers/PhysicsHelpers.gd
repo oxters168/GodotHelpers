@@ -22,7 +22,7 @@ static func raycast_3d(
 	hit_back_faces: bool = true,
 	hit_from_inside: bool = false
 ) -> Dictionary:
-	var space_state = Engine.get_main_loop().current_scene.get_world_3d().get_direct_space_state()
+	var space_state = Engine.get_main_loop().current_scene.get_world_3d().get_direct_space_state() if !Engine.is_editor_hint() else EditorInterface.get_editor_viewport_3d().find_world_3d().get_direct_space_state()
 	var params = PhysicsRayQueryParameters3D.new()
 	params.collide_with_areas = collide_with_areas
 	params.collide_with_bodies = collide_with_bodies
@@ -33,6 +33,26 @@ static func raycast_3d(
 	params.from = origin
 	params.to = origin + direction * distance
 	return space_state.intersect_ray(params)
+## Creates a raycast from the current mouse position of the current active camera's viewport into the world 3d of the main loop's current scene
+## and returns the dictionary result of [method PhysicsDirectSpaceState3D.intersect_ray]
+static func raycast_from_mouse_3d(
+	distance: float = 100,
+	collision_mask: int = ~0,
+	collide_with_areas: bool = false,
+	collide_with_bodies: bool = true,
+	exclude: Array[RID] = [],
+	hit_back_faces: bool = true,
+	hit_from_inside: bool = false
+) -> Dictionary:
+	var current_cam = CameraHelpers.get_active_camera_3d()
+	var result: Dictionary = {}
+	assert(current_cam != null, "Could not find an active 3d camera to initiate mouse raycast")
+	if current_cam != null:
+		var mouse_pos: Vector2 = current_cam.get_viewport().get_mouse_position()
+		var raycast_origin: Vector3 = current_cam.project_ray_origin(mouse_pos)
+		var raycast_dir: Vector3 = current_cam.project_ray_normal(mouse_pos)
+		result = PhysicsHelpers.raycast_3d(raycast_origin, raycast_dir, distance, collision_mask, collide_with_areas, collide_with_bodies, exclude, hit_back_faces, hit_from_inside)
+	return result
 
 ## Rotates the given rigidbody to the specified angle (should be in radians) along an axis
 static func rotate_to(rigidbody: RigidBody3D, axis: Vector3, normal: Vector3, angle: float, acceleration: float, max_speed: float, deceleration: float, delta_time: float):
@@ -112,6 +132,24 @@ static func get_gravity_magnitude_2d() -> int:
 static func get_gravity_2d() -> Vector2:
 	return get_gravity_vector_2d() * get_gravity_magnitude_2d()
 
+## Calculates the force vector required to be applied to a rigidbody in order to achieve the [param desired_position]
+static func calculate_required_force_for_position_3d(desired_position: Vector3, current_position: Vector3, current_velocity: Vector3, mass: float, timestep: float = 0.02, account_for_gravity: bool = false, max_force: float = Constants.FLOAT_MAX) -> Vector3:
+	var naked_force: Vector3 = (desired_position - current_position) / (timestep * timestep)
+	naked_force *= mass
+
+	var anti_gravity_force: Vector3 = Vector3.ZERO
+	if (account_for_gravity):
+		anti_gravity_force = calculate_anti_gravity_force_3d(mass)
+
+	var deltaForce: Vector3 = (naked_force + anti_gravity_force) - ((current_velocity / timestep) * mass)
+
+	return VectorHelpers.max_mag(deltaForce, max_force)
+## Calculates the force vector required to be applied to the [param rigidbody] in order to achieve the [param desired_position]
+static func calculate_required_force_for_position_rgdbdy_3d(rigidbody: RigidBody3D, desired_position: Vector3, timestep: float = 0.02, account_for_gravity: bool = false, max_force: float = Constants.FLOAT_MAX) -> Vector3:
+	return calculate_required_force_for_position_3d(desired_position, rigidbody.global_position, rigidbody.linear_velocity, rigidbody.mass, timestep, account_for_gravity, max_force)
+## Calculates the force that needs to be applied to an object with the given mass to counteract gravity's effect on it
+static func calculate_anti_gravity_force_3d(mass: float) -> Vector3:
+		return -get_gravity_3d() * mass
 ## Calculates the force vector required to be applied to a rigidbody through [method RigidBody2D.apply_central_force] to achieve the desired speed
 static func calculate_required_force_for_speed_2d(
 	mass: float,
@@ -286,3 +324,57 @@ static func create_rigidbody3d_capsule(
 		rigidbody.add_child(renderer)
 
 	return rigidbody
+## Creates a [StaticBody3D] box with the given parameters
+static func create_static_box_3d(
+	size: Vector3 = Vector3.ONE,
+	pos_offset: Vector3 = Vector3.ZERO,
+	rot_offset: Quaternion = Quaternion.IDENTITY,
+	with_renderer: bool = true,
+	mat: Material = StandardMaterial3D.new()
+) -> StaticBody3D:
+	var staticbody: StaticBody3D = StaticBody3D.new()
+
+	var shape = BoxShape3D.new()
+	shape.size = size
+	var collider = CollisionShape3D.new()
+	collider.shape = shape
+	collider.transform = Transform3D(Basis(rot_offset), pos_offset)
+	staticbody.add_child(collider)
+
+	if with_renderer:
+		var mesh = BoxMesh.new()
+		mesh.size = size
+		var renderer = MeshInstance3D.new()
+		renderer.mesh = mesh
+		renderer.transform = Transform3D(Basis(rot_offset), pos_offset)
+		renderer.material_override = mat
+		staticbody.add_child(renderer)
+
+	return staticbody
+## Creates an [Area3D] box with the given parameters
+static func create_area_box_3d(
+	size: Vector3 = Vector3.ONE,
+	pos_offset: Vector3 = Vector3.ZERO,
+	rot_offset: Quaternion = Quaternion.IDENTITY,
+	with_renderer: bool = true,
+	mat: Material = StandardMaterial3D.new()
+) -> Area3D:
+	var area: Area3D = Area3D.new()
+
+	var shape = BoxShape3D.new()
+	shape.size = size
+	var collider = CollisionShape3D.new()
+	collider.shape = shape
+	collider.transform = Transform3D(Basis(rot_offset), pos_offset)
+	area.add_child(collider)
+
+	if with_renderer:
+		var mesh = BoxMesh.new()
+		mesh.size = size
+		var renderer = MeshInstance3D.new()
+		renderer.mesh = mesh
+		renderer.transform = Transform3D(Basis(rot_offset), pos_offset)
+		renderer.material_override = mat
+		area.add_child(renderer)
+
+	return area

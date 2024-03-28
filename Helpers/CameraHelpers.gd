@@ -74,3 +74,10 @@ static func display_frustum_at(cam: Camera3D, z: float, color: Color = Color.WHI
 	DebugDraw.draw_line_3d(top_left_corner, top_right_corner, color, linger_frames)
 	# bottom edge
 	DebugDraw.draw_line_3d(bottom_left_corner, bottom_right_corner, color, linger_frames)
+
+## Returns the currently active 2D camera. Returns null if there are no active cameras.
+static func get_active_camera_2d() -> Camera3D:
+	return NodeHelpers.get_child_of_type(Engine.get_main_loop().current_scene, Viewport).get_camera_2d() if !Engine.is_editor_hint() else EditorInterface.get_editor_viewport_3d().get_camera_2d()
+## Returns the currently active 3D camera. Returns null if there are no active cameras.
+static func get_active_camera_3d() -> Camera3D:
+	return NodeHelpers.get_child_of_type(Engine.get_main_loop().current_scene, Viewport).get_camera_3d() if !Engine.is_editor_hint() else EditorInterface.get_editor_viewport_3d().get_camera_3d()
