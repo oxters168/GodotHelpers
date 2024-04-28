@@ -29,7 +29,17 @@ static func obj_from_dict(data: Dictionary) -> Object:
 	var instance = load(data["_type"]).new()
 	for key in data.keys():
 		if key != "_type":
-			# switched to [method Object.set_deferred] since [method Object.set] would end
-			# the function sometimes without an error and without a return
-			instance.set_deferred(key, data[key])
+			# [method Object.set] sometimes would end the function without an error and without a return.
+			# Switching to [method Object.set_deferred] stopped that issue, but then the returned object
+			# does not contain the correct values.
+			instance.set(key, data[key])
 	return instance
+
+## Joins two paths and adds a forward slash in between if necessary
+static func join_path(path: String, other: String) -> String:
+	var joined_path: String
+	if path.ends_with("/"):
+		joined_path = str(path, other)
+	else:
+		joined_path = str(path, "/", other)
+	return joined_path
