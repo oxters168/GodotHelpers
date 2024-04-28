@@ -29,5 +29,7 @@ static func obj_from_dict(data: Dictionary) -> Object:
 	var instance = load(data["_type"]).new()
 	for key in data.keys():
 		if key != "_type":
-			instance.set(key, data[key])
+			# switched to [method Object.set_deferred] since [method Object.set] would end
+			# the function sometimes without an error and without a return
+			instance.set_deferred(key, data[key])
 	return instance
