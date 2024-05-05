@@ -206,13 +206,15 @@ func _refresh_view(index: int):
 			_variant_maker = Transform2DMake.new()
 			_variant_maker.constructor_index = index
 		elif type_index == TYPE_VECTOR4:
-			pass
+			_variant_maker = Vector4Make.new()
 		elif type_index == TYPE_VECTOR4I:
-			pass
+			_variant_maker = Vector4iMake.new()
 		elif type_index == TYPE_PLANE:
-			pass
+			_variant_maker = PlaneMake.new()
+			_variant_maker.constructor_index = index
 		elif type_index == TYPE_QUATERNION:
-			pass
+			_variant_maker = QuaternionMake.new()
+			_variant_maker.constructor_index = index
 		elif type_index == TYPE_AABB:
 			pass
 		elif type_index == TYPE_BASIS:
