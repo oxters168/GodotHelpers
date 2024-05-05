@@ -45,7 +45,7 @@ static func create_property(name: String, type: Enums.VariantType, clazz_name: S
 ## Turns an array of properties into a string that looks like the parameters of a function
 static func to_func_signature(properties: Array) -> String:
 	var params: String = properties.map(func(param):
-		return str(param.name, ": ", type_string(param.type))
+		return str(type_string(param.type), " ", param.name)
 	).reduce(func(accum, current):
 		if accum.is_empty():
 			return current

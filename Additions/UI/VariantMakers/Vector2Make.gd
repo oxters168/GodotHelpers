@@ -1,3 +1,4 @@
+@tool
 extends AbstractVariantMake
 class_name Vector2Make
 

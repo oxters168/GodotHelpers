@@ -1,3 +1,4 @@
+@tool
 extends Vector2iMake
 class_name Vector3iMake
 

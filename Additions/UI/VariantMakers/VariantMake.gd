@@ -19,7 +19,7 @@ var _builtin_index: int
 var _custom_index: int
 
 var _constructor_picker: MenuButton
-var _constructor_index: int
+# var _constructor_index: int
 var _variant_maker: AbstractVariantMake
 var _tabbed_view: TabContainer
 var _primitive_opt_btn: OptionButton
@@ -32,7 +32,7 @@ func _get_property_list():
 	properties.append(PropertyHelpers.create_enum_property("Type_Type", TypeType.keys()))
 	var values: Array
 	if _type_type == TypeType.Primitive:
-		values = get_primitives().map(func(p_type): return type_string(p_type))
+		values = VariantMake.get_primitives().map(func(p_type): return type_string(p_type))
 	elif _type_type == TypeType.BuiltIn:
 		values = Array(ClassDB.get_class_list())
 	elif _type_type == TypeType.Custom:
@@ -43,7 +43,7 @@ func _set(property, value):
 	if property == "Type_Type":
 		_type_type = value
 		notify_property_list_changed()
-		refresh_view()
+		_refresh_view(constructor_index)
 	if property == "Type":
 		if _type_type == TypeType.Primitive:
 			_primitive_index = value
@@ -51,7 +51,8 @@ func _set(property, value):
 			_builtin_index = value
 		elif _type_type == TypeType.Custom:
 			_custom_index = value
-		refresh_view()
+		notify_property_list_changed()
+		_refresh_view(constructor_index)
 		
 func _get(property):
 	if property == "Type_Type":
@@ -83,7 +84,7 @@ func set_type_from_property(property: Dictionary):
 		if ClassDB.class_exists(property.class_name):
 			_type_type = TypeType.BuiltIn
 			_builtin_index = ClassDB.get_class_list().find(property.class_name)
-			refresh_view()
+			_refresh_view(constructor_index)
 		else:
 			_type_type = TypeType.Custom
 			var found_class: bool
@@ -95,21 +96,21 @@ func set_type_from_property(property: Dictionary):
 					break
 			if !found_class:
 				push_error("Could not find custom class: ", property.class_name)
-			refresh_view()
+			_refresh_view(constructor_index)
 	else:
 		_type_type = TypeType.Primitive
-		_primitive_index = get_primitives().find(property.type)
-		refresh_view()
+		_primitive_index = VariantMake.get_primitives().find(property.type)
+		_refresh_view(constructor_index)
 
 func _init():
 	# primitives tab
-	var primitives: Array = get_primitives()
+	var primitives: Array = VariantMake.get_primitives()
 	_primitive_opt_btn = UIHelpers.option_btn_wicons(primitives.map(func(p_type): return type_string(p_type)), 0, primitives.map(func(p_type): return EditorInterface.get_editor_theme().get_icon(type_string(p_type), "EditorIcons")))
 	_primitive_opt_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_primitive_opt_btn.item_selected.connect(func(index):
-		_constructor_index = 0
+		constructor_index = 0
 		_primitive_index = index
-		refresh_view()
+		_refresh_view(constructor_index)
 	)
 	_primitive_opt_btn.name = "Primitive"
 
@@ -118,9 +119,9 @@ func _init():
 	_builtin_opt_btn = UIHelpers.option_btn_wicons(built_ins, 0)
 	_builtin_opt_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_builtin_opt_btn.item_selected.connect(func(index):
-		_constructor_index = 0
+		constructor_index = 0
 		_builtin_index = index
-		refresh_view()
+		_refresh_view(constructor_index)
 	)
 	_builtin_opt_btn.name = "Built-In"
 
@@ -129,20 +130,21 @@ func _init():
 	_custom_opt_btn = UIHelpers.option_btn_wicons(customs.map(func(clazz): return clazz.class), 0)
 	_custom_opt_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_custom_opt_btn.item_selected.connect(func(index):
-		_constructor_index = 0
+		constructor_index = 0
 		_custom_index = index
-		refresh_view()
+		_refresh_view(constructor_index)
 	)
 	_custom_opt_btn.name = "Custom"
 
 	_tabbed_view = TabContainer.new()
 	_tabbed_view.tab_changed.connect(func(tab_index):
 		_type_type = tab_index
-		refresh_view()
+		_refresh_view(constructor_index)
 	)
 	_tabbed_view.add_child(_primitive_opt_btn)
 	_tabbed_view.add_child(_builtin_opt_btn)
 	_tabbed_view.add_child(_custom_opt_btn)
+	_tabbed_view.visible = show_type_picker
 
 	_constructor_view = PanelContainer.new()
 
@@ -151,8 +153,8 @@ func _init():
 	_constructor_picker.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
 	_constructor_picker.icon = EditorInterface.get_editor_theme().get_icon("GuiTabMenu", "EditorIcons")
 	_constructor_picker.get_popup().index_pressed.connect(func(index):
-		_constructor_index = index
-		refresh_view()
+		constructor_index = index
+		_refresh_view(constructor_index)
 	)
 
 	var v_panel: VBoxContainer = VBoxContainer.new()
@@ -161,22 +163,25 @@ func _init():
 	v_panel.add_child(_constructor_view)
 	add_child(v_panel)
 	
-	refresh_view()
+	_refresh_view(constructor_index)
 
-func clear_view():
+func get_constructors() -> Array:
+	return _variant_maker.get_constructors() if _variant_maker != null else []
+
+func _clear_view():
 	_variant_maker = null
 	for child in _constructor_view.get_children():
 		_constructor_view.remove_child(child)
 		child.queue_free()
-func refresh_view():
+func _refresh_view(index: int):
 	_tabbed_view.current_tab = _type_type
 	_primitive_opt_btn.select(_primitive_index)
 	_builtin_opt_btn.select(_builtin_index)
 	_custom_opt_btn.select(_custom_index)
 
-	clear_view()
+	_clear_view()
 	if _type_type == TypeType.Primitive:
-		var type_index = get_primitives()[_primitive_index]
+		var type_index = VariantMake.get_primitives()[_primitive_index]
 		if type_index == TYPE_BOOL:
 			_variant_maker = BoolMake.new()
 		elif type_index == TYPE_INT:
@@ -198,7 +203,8 @@ func refresh_view():
 		elif type_index == TYPE_VECTOR3I:
 			_variant_maker = Vector3iMake.new()
 		elif type_index == TYPE_TRANSFORM2D:
-			_variant_maker = Transform2DMake.new(_constructor_index)
+			_variant_maker = Transform2DMake.new()
+			_variant_maker.constructor_index = index
 		elif type_index == TYPE_VECTOR4:
 			pass
 		elif type_index == TYPE_VECTOR4I:
