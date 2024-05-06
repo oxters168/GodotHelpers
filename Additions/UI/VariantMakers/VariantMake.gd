@@ -182,82 +182,14 @@ func _refresh_view(index: int):
 	_clear_view()
 	if _type_type == TypeType.Primitive:
 		var type_index = VariantMake.get_primitives()[_primitive_index]
-		if type_index == TYPE_BOOL:
-			_variant_maker = BoolMake.new()
-		elif type_index == TYPE_INT:
-			_variant_maker = IntMake.new()
-		elif type_index == TYPE_FLOAT:
-			_variant_maker = FloatMake.new()
-		elif type_index == TYPE_STRING:
-			_variant_maker = StringMake.new()
-		elif type_index == TYPE_VECTOR2:
-			_variant_maker = Vector2Make.new()
-		elif type_index == TYPE_VECTOR2I:
-			_variant_maker = Vector2iMake.new()
-		elif type_index == TYPE_RECT2:
-			_variant_maker = Rect2Make.new()
-		elif type_index == TYPE_RECT2I:
-			_variant_maker = Rect2iMake.new()
-		elif type_index == TYPE_VECTOR3:
-			_variant_maker = Vector3Make.new()
-		elif type_index == TYPE_VECTOR3I:
-			_variant_maker = Vector3iMake.new()
-		elif type_index == TYPE_TRANSFORM2D:
-			_variant_maker = Transform2DMake.new()
-			_variant_maker.constructor_index = index
-		elif type_index == TYPE_VECTOR4:
-			_variant_maker = Vector4Make.new()
-		elif type_index == TYPE_VECTOR4I:
-			_variant_maker = Vector4iMake.new()
-		elif type_index == TYPE_PLANE:
-			_variant_maker = PlaneMake.new()
-			_variant_maker.constructor_index = index
-		elif type_index == TYPE_QUATERNION:
-			_variant_maker = QuaternionMake.new()
-			_variant_maker.constructor_index = index
-		elif type_index == TYPE_AABB:
-			pass
-		elif type_index == TYPE_BASIS:
-			pass
-		elif type_index == TYPE_TRANSFORM3D:
-			pass
-		elif type_index == TYPE_PROJECTION:
-			pass
-		elif type_index == TYPE_COLOR:
-			pass
-		elif type_index == TYPE_STRING_NAME:
-			pass
-		elif type_index == TYPE_NODE_PATH:
-			pass
-		elif type_index == TYPE_RID:
-			pass
-		elif type_index == TYPE_CALLABLE:
-			pass
-		elif type_index == TYPE_SIGNAL:
-			pass
-		elif type_index == TYPE_DICTIONARY:
-			pass
-		elif type_index == TYPE_ARRAY:
-			pass
-		elif type_index == TYPE_PACKED_BYTE_ARRAY:
-			pass
-		elif type_index == TYPE_PACKED_INT32_ARRAY:
-			pass
-		elif type_index == TYPE_PACKED_INT64_ARRAY:
-			pass
-		elif type_index == TYPE_PACKED_FLOAT32_ARRAY:
-			pass
-		elif type_index == TYPE_PACKED_FLOAT64_ARRAY:
-			pass
-		elif type_index == TYPE_PACKED_STRING_ARRAY:
-			pass
-		elif type_index == TYPE_PACKED_VECTOR2_ARRAY:
-			pass
-		elif type_index == TYPE_PACKED_VECTOR3_ARRAY:
-			pass
-		elif type_index == TYPE_PACKED_COLOR_ARRAY:
-			pass
+		_variant_maker = VariantMake.get_maker(type_index)
+	elif _type_type == TypeType.BuiltIn:
+		pass
+	elif _type_type == TypeType.Custom:
+		pass
 	
+	_variant_maker.constructor_index = index
+
 	var constructors: Array = []
 	if _variant_maker:
 		constructors = _variant_maker.get_constructors()
@@ -269,3 +201,79 @@ func _refresh_view(index: int):
 		_constructor_picker.get_popup().add_item(PropertyHelpers.to_func_signature(constructor))
 	
 	view_refreshed.emit()
+
+static func get_maker(type_index: Enums.VariantType) -> AbstractVariantMake:
+	var variant_maker: AbstractVariantMake
+	if type_index == TYPE_BOOL:
+		variant_maker = BoolMake.new()
+	elif type_index == TYPE_INT:
+		variant_maker = IntMake.new()
+	elif type_index == TYPE_FLOAT:
+		variant_maker = FloatMake.new()
+	elif type_index == TYPE_STRING:
+		variant_maker = StringMake.new()
+	elif type_index == TYPE_VECTOR2:
+		variant_maker = Vector2Make.new()
+	elif type_index == TYPE_VECTOR2I:
+		variant_maker = Vector2iMake.new()
+	elif type_index == TYPE_RECT2:
+		variant_maker = Rect2Make.new()
+	elif type_index == TYPE_RECT2I:
+		variant_maker = Rect2iMake.new()
+	elif type_index == TYPE_VECTOR3:
+		variant_maker = Vector3Make.new()
+	elif type_index == TYPE_VECTOR3I:
+		variant_maker = Vector3iMake.new()
+	elif type_index == TYPE_TRANSFORM2D:
+		variant_maker = Transform2DMake.new()
+	elif type_index == TYPE_VECTOR4:
+		variant_maker = Vector4Make.new()
+	elif type_index == TYPE_VECTOR4I:
+		variant_maker = Vector4iMake.new()
+	elif type_index == TYPE_PLANE:
+		variant_maker = PlaneMake.new()
+	elif type_index == TYPE_QUATERNION:
+		variant_maker = QuaternionMake.new()
+	elif type_index == TYPE_AABB:
+		variant_maker = AABBMake.new()
+	elif type_index == TYPE_BASIS:
+		variant_maker = BasisMake.new()
+	elif type_index == TYPE_TRANSFORM3D:
+		variant_maker = Transform3DMake.new()
+	elif type_index == TYPE_PROJECTION:
+		variant_maker = ProjectionMake.new()
+	elif type_index == TYPE_COLOR:
+		variant_maker = ColorMake.new()
+	elif type_index == TYPE_STRING_NAME:
+		variant_maker = StringNameMake.new()
+	elif type_index == TYPE_NODE_PATH:
+		variant_maker = NodePathMake.new()
+	elif type_index == TYPE_RID:
+		variant_maker = RIDMake.new()
+	elif type_index == TYPE_CALLABLE:
+		variant_maker = CallableMake.new()
+	elif type_index == TYPE_SIGNAL:
+		variant_maker = SignalMake.new()
+	elif type_index == TYPE_DICTIONARY:
+		variant_maker = DictionaryMake.new()
+	elif type_index == TYPE_ARRAY:
+		variant_maker = ArrayMake.new()
+	elif type_index == TYPE_PACKED_BYTE_ARRAY:
+		variant_maker = PackedByteArrayMake.new()
+	elif type_index == TYPE_PACKED_INT32_ARRAY:
+		variant_maker = PackedInt32ArrayMake.new()
+	elif type_index == TYPE_PACKED_INT64_ARRAY:
+		variant_maker = PackedInt64ArrayMake.new()
+	elif type_index == TYPE_PACKED_FLOAT32_ARRAY:
+		variant_maker = PackedFloat32ArrayMake.new()
+	elif type_index == TYPE_PACKED_FLOAT64_ARRAY:
+		variant_maker = PackedFloat64ArrayMake.new()
+	elif type_index == TYPE_PACKED_STRING_ARRAY:
+		variant_maker = PackedStringArrayMake.new()
+	elif type_index == TYPE_PACKED_VECTOR2_ARRAY:
+		variant_maker = PackedVector2ArrayMake.new()
+	elif type_index == TYPE_PACKED_VECTOR3_ARRAY:
+		variant_maker = PackedVector3ArrayMake.new()
+	elif type_index == TYPE_PACKED_COLOR_ARRAY:
+		variant_maker = PackedColorArrayMake.new()
+	return variant_maker
