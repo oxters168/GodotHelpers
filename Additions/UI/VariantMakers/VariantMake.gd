@@ -19,7 +19,6 @@ var _builtin_index: int
 var _custom_index: int
 
 var _constructor_picker: MenuButton
-# var _constructor_index: int
 var _variant_maker: AbstractVariantMake
 var _tabbed_view: TabContainer
 var _primitive_opt_btn: OptionButton
@@ -183,10 +182,9 @@ func _refresh_view(index: int):
 	if _type_type == TypeType.Primitive:
 		var type_index = VariantMake.get_primitives()[_primitive_index]
 		_variant_maker = VariantMake.get_maker(type_index)
-	elif _type_type == TypeType.BuiltIn:
-		pass
-	elif _type_type == TypeType.Custom:
-		pass
+	elif _type_type == TypeType.BuiltIn || _type_type == TypeType.Custom:
+		_variant_maker = ObjectMake.new()
+		_variant_maker.clazz = ClassDB.get_class_list()[_builtin_index] if _type_type == TypeType.BuiltIn else ProjectSettings.get_global_class_list()[_custom_index].path
 	
 	_variant_maker.constructor_index = index
 
@@ -202,6 +200,7 @@ func _refresh_view(index: int):
 	
 	view_refreshed.emit()
 
+## Create [AbstractVariantMake] child type representing the given type. Does not work with [Enums.VariantType.TYPE_NIL], [Enums.VariantType.TYPE_OBJECT], and [Enums.VariantType.TYPE_MAX].
 static func get_maker(type_index: Enums.VariantType) -> AbstractVariantMake:
 	var variant_maker: AbstractVariantMake
 	if type_index == TYPE_BOOL:
