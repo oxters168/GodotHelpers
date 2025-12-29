@@ -86,6 +86,68 @@ static func rotate_to(rigidbody: RigidBody3D, axis: Vector3, normal: Vector3, an
 		
 		rigidbody.apply_torque(rot_acc_value * axis * rigidbody.mass)
 
+## Rotates the given rigidbody to the specified angle (should be in radians)
+static func rotate_to_2d(current_angle: float, current_ang_vel: float, mass: float, angle: float, acceleration: float, max_speed: float, deceleration: float, delta_time: float, global: bool = true):
+	var rot_dir = sign(current_ang_vel)
+	# DebugDraw.set_text("rotate_to", str("requested_angle(", angle, ") current_angle(", current_angle, ") ang_vel(", current_ang_vel, ")"))
+	# To avoid going the wrong way to reach an angle
+	if (abs(angle - current_angle) > PI):
+		current_angle += sign(angle - current_angle) * (2 * PI)
+	var angle_travel_left: float = abs(angle - current_angle)
+	var dir_to_go: float = sign(angle - current_angle)
+
+	# How much time would it take us to decelerate based on our current velocity
+	var deceleration_time: float = abs(current_ang_vel / deceleration)
+	# How much time would it take us to reach our desired angle based on our current velocity
+	var reach_time: float = abs(angle_travel_left / current_ang_vel)
+	
+	# If the amount of time to decelerate is longer than the amount of time it would take our momentum to reach (if we're overshooting), then start decelerating
+	if (deceleration_time >= reach_time):
+		var expected_dec = (abs(current_ang_vel) / delta_time)
+		var rot_acc_value = -rot_dir * min(deceleration, expected_dec)
+		return rot_acc_value * mass
+	else:
+		var expected_acc = angle_travel_left / (delta_time * delta_time)
+		# If we're currently rotating in the opposite direction of what we want, use the deceleration value instead of acceleration
+		var rot_acc_value = (dir_to_go * (deceleration if sign(dir_to_go) != rot_dir else min(acceleration, expected_acc)))
+		if (abs(current_ang_vel + (rot_acc_value * delta_time)) >= max_speed):
+			rot_acc_value = dir_to_go * (max_speed - abs(current_ang_vel))
+		
+		return rot_acc_value * mass
+
+## Returns the required target velocity to give to the [PinJoint2D] motor in order to achieve the given angle in radians
+static func pinjoint2d_rotate_to(node_a: Node2D, node_b: Node2D, current_ang_vel: float, angle: float, acceleration: float, max_speed: float, deceleration: float, delta_time: float, global: bool = true):
+	var rot_dir = sign(current_ang_vel)
+	var current_angle = (node_a.global_transform.inverse() * node_b.global_transform).get_rotation()
+	# print(current_angle)
+	# var current_angle = node_a.angle_to_point(node_b) + PI / 2
+	# DebugDraw.set_text("rotate_to", str("requested_angle(", angle, ") current_angle(", current_angle, ") ang_vel(", current_ang_vel, ")"))
+	# To avoid going the wrong way to reach an angle
+	if (abs(angle - current_angle) > PI):
+		current_angle += sign(angle - current_angle) * (2 * PI)
+	var angle_travel_left: float = abs(angle - current_angle)
+	var dir_to_go: float = sign(angle - current_angle)
+
+	# How much time would it take us to decelerate based on our current velocity
+	var deceleration_time: float = abs(current_ang_vel / deceleration)
+	# How much time would it take us to reach our desired angle based on our current velocity
+	var reach_time: float = abs(angle_travel_left / current_ang_vel)
+	
+	# If the amount of time to decelerate is longer than the amount of time it would take our momentum to reach (if we're overshooting), then start decelerating
+	if (deceleration_time >= reach_time):
+		var expected_dec = (abs(current_ang_vel) / delta_time)
+		var rot_acc_value = -rot_dir * min(deceleration, expected_dec)
+		return rot_acc_value * delta_time
+		# rigidbody.apply_torque(rot_acc_value * rigidbody.mass)
+	else:
+		var expected_acc = angle_travel_left / (delta_time * delta_time)
+		# If we're currently rotating in the opposite direction of what we want, use the deceleration value instead of acceleration
+		var rot_acc_value = (dir_to_go * (deceleration if sign(dir_to_go) != rot_dir else min(acceleration, expected_acc)))
+		if (abs(current_ang_vel + (rot_acc_value * delta_time)) >= max_speed):
+			rot_acc_value = dir_to_go * (max_speed - abs(current_ang_vel))
+		return rot_acc_value * delta_time
+		# rigidbody.apply_torque(rot_acc_value * rigidbody.mass)
+
 ## Rotates the rigidbody in a direction along an axis
 static func rotate(rigidbody: RigidBody3D, axis: Vector3, normal: Vector3, input: float, acceleration: float, max_speed: float, deceleration: float, delta_time: float):
 	var current_ang_vel = PhysicsHelpers.get_axis_angular_velocity(rigidbody, axis, normal)
