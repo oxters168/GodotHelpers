@@ -4,15 +4,16 @@ importer="texture"
 type="CompressedTexture2D"
 uid="uid://6pxir3pix28r"
 path.s3tc="res://.godot/imported/WaterPerlinNoise.png-4f502250de5a9ef86d151c4cdde90327.s3tc.ctex"
+path.etc2="res://.godot/imported/WaterPerlinNoise.png-4f502250de5a9ef86d151c4cdde90327.etc2.ctex"
 metadata={
-"imported_formats": ["s3tc_bptc"],
+"imported_formats": ["s3tc_bptc", "etc2_astc"],
 "vram_texture": true
 }
 
 [deps]
 
 source_file="res://godot_helpers/Additions/Shaders/Resources/WaterPerlinNoise.png"
-dest_files=["res://.godot/imported/WaterPerlinNoise.png-4f502250de5a9ef86d151c4cdde90327.s3tc.ctex"]
+dest_files=["res://.godot/imported/WaterPerlinNoise.png-4f502250de5a9ef86d151c4cdde90327.s3tc.ctex", "res://.godot/imported/WaterPerlinNoise.png-4f502250de5a9ef86d151c4cdde90327.etc2.ctex"]
 
 [params]
 
