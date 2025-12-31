@@ -22,7 +22,13 @@ static func raycast_3d(
 	hit_back_faces: bool = true,
 	hit_from_inside: bool = false
 ) -> Dictionary:
-	var space_state = Engine.get_main_loop().current_scene.get_world_3d().get_direct_space_state() if !Engine.is_editor_hint() else EditorInterface.get_editor_viewport_3d().find_world_3d().get_direct_space_state()
+	var space_state: PhysicsDirectSpaceState3D
+	if (!Engine.is_editor_hint()):
+		space_state = Engine.get_main_loop().current_scene.get_world_3d().direct_space_state
+	else:
+		# have to use get_singleton or else build errors out that 'EditorInterface' does not exist
+		var editor_interface = Engine.get_singleton("EditorInterface")
+		space_state = editor_interface.get_editor_viewport_3d().find_world_3d().direct_space_state
 	var params = PhysicsRayQueryParameters3D.new()
 	params.collide_with_areas = collide_with_areas
 	params.collide_with_bodies = collide_with_bodies
@@ -87,7 +93,7 @@ static func rotate_to(rigidbody: RigidBody3D, axis: Vector3, normal: Vector3, an
 		rigidbody.apply_torque(rot_acc_value * axis * rigidbody.mass)
 
 ## Rotates the given rigidbody to the specified angle (should be in radians)
-static func rotate_to_2d(current_angle: float, current_ang_vel: float, mass: float, angle: float, acceleration: float, max_speed: float, deceleration: float, delta_time: float, global: bool = true):
+static func rotate_to_2d(current_angle: float, current_ang_vel: float, mass: float, angle: float, acceleration: float, max_speed: float, deceleration: float, delta_time: float):
 	var rot_dir = sign(current_ang_vel)
 	# DebugDraw.set_text("rotate_to", str("requested_angle(", angle, ") current_angle(", current_angle, ") ang_vel(", current_ang_vel, ")"))
 	# To avoid going the wrong way to reach an angle
@@ -116,7 +122,16 @@ static func rotate_to_2d(current_angle: float, current_ang_vel: float, mass: flo
 		return rot_acc_value * mass
 
 ## Returns the required target velocity to give to the [PinJoint2D] motor in order to achieve the given angle in radians
-static func pinjoint2d_rotate_to(node_a: Node2D, node_b: Node2D, current_ang_vel: float, angle: float, acceleration: float, max_speed: float, deceleration: float, delta_time: float, global: bool = true):
+static func pinjoint2d_rotate_to(
+	node_a: Node2D,
+	node_b: Node2D,
+	current_ang_vel: float,
+	angle: float,
+	acceleration: float,
+	max_speed: float,
+	deceleration: float,
+	delta_time: float
+) -> float:
 	var rot_dir = sign(current_ang_vel)
 	var current_angle = (node_a.global_transform.inverse() * node_b.global_transform).get_rotation()
 	# print(current_angle)
