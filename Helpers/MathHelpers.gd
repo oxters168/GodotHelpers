@@ -1,10 +1,33 @@
 class_name MathHelpers
 
 ## Truncates the decimal places of the given value to the desired amount
-static func to_decimal_places(value: float, decimals: int) -> float:
+static func to_decimal_places(value: Variant, decimals: int) -> Variant:
 	var multiplier = pow(10, decimals)
-	return round(value * multiplier) / multiplier
+	var format_num: Callable = func(num: float) -> float: return (round(num * multiplier) / multiplier)
+	if (value is float):
+		return format_num.call(value)
+	elif (value is Vector2):
+		return Vector2(format_num.call(value.x), format_num.call(value.y))
+	elif (value is Vector3):
+		return Vector3(format_num.call(value.x), format_num.call(value.y), format_num.call(value.z))
+	else:
+		printerr("Received bad value type (", value.VariantType, ") in 'to_decimal_places', only supports float, Vector2, and Vector3")
+		return value
 
+static func print_format(value: Variant, decimals: int = 2) -> String:
+	var neg_space: Callable = func(num: float) -> String: return str(" ", num) if num >= 0 else str(num)
+	if (value is int):
+		return neg_space.call(value)
+	elif (value is float):
+		return neg_space.call(to_decimal_places(value, decimals))
+	elif (value is Vector2):
+		return str("(", neg_space.call(to_decimal_places(value.x, decimals)), ", ", neg_space.call(to_decimal_places(value.y, decimals)), ")")
+	elif (value is Vector3):
+		return str("(", neg_space.call(to_decimal_places(value.x, decimals)), ", ", neg_space.call(to_decimal_places(value.y, decimals)), ", ", neg_space.call(to_decimal_places(value.z, decimals)), ")")
+	else:
+		printerr("Received bad value type (", value.VariantType, ") in 'print_format', only supports int, float, Vector2, and Vector3")
+		return str(value)
+	
 ## Generates a random angle from [param -limit] to [param limit] (inclusive)
 ## Source: https://github.com/t-mw/citygen-godot/blob/master/scripts/math.gd
 static func random_angle(limit: float) -> float:
