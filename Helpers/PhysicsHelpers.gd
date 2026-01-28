@@ -263,7 +263,7 @@ static func calculate_required_force_for_speed_1d(
 
 	var current_force: float = (velocity / timestep) * mass
 
-	var gravity_force: int = 0
+	var gravity_force: float = 0
 	if (account_for_gravity):
 		gravity_force = get_gravity_magnitude_2d() * mass
 

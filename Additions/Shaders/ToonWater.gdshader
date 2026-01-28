@@ -54,7 +54,7 @@ void fragment(){
 	float depthVal = texture(DEPTH_TEXTURE, SCREEN_UV).r;
 	float depth = PROJECTION_MATRIX[3][2] / (depthVal + PROJECTION_MATRIX[2][2]);
 	depth = depth + VERTEX.z;
-	depth = exp(-depth * beer_factor);
+	depth = exp(depth * beer_factor);
 	depth = 1.0 - depth;
 	
 	// Still unsure how to get properly the NORMAL from the camera
