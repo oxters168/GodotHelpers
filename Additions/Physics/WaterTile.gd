@@ -149,10 +149,10 @@ func _process_buoyancy():
 								# DebugDraw.draw_ray_3d(triangle.center, triangle.normal, 1, Color.BLUE, 2)
 							# TODO: Make force work with any gravity orientation, not just the assumed up direction
 							# print_debug(rho, " * ", gravity.y, " * ", abs(get_water_displacement_at(triangle.center)), " * ", triangle.area, " * ", triangle.normal)
-							var triangle_normal = collision_shape.to_global(local_triangle.normal) - collision_shape.global_position
-							var force: Vector3 = rho * gravity.y * abs(get_water_displacement_at(triangle_center)) * local_triangle.area * triangle_normal
+							var triangle_normal = collision_shape.global_transform * local_triangle.normal
+							var force: Vector3 = rho * gravity.y * -get_water_displacement_at(triangle_center) * local_triangle.area * triangle_normal
 							force = Vector3(0, force.y, 0)
-							floating_obj.apply_force(force, triangle_center - floating_obj.global_position)
+							floating_obj.apply_force(force, floating_obj.to_local(triangle_center))
 	if debug:
 		DebugDraw.draw_box(_listening_collider.global_position, _listening_collider.shape.size, Color.GREEN if processed_floater else Color.RED, 2)
 

@@ -53,7 +53,65 @@ static func collision_shape_to_mesh(shape: Shape3D, subdivide_width: int = 0, su
 		final_mesh.height = casted_shape.radius * 2
 		final_mesh.radial_segments = radial_segments
 		final_mesh.rings = rings
+	elif shape is ConvexPolygonShape3D:
+		var casted_shape = shape as ConvexPolygonShape3D
+		final_mesh = create_mesh_from_convex_shape(casted_shape)
 	return final_mesh
+
+## Converts the given [PackedVector3Array] representing a convex hull to an [ArrayMesh] with normals and indices
+static func create_mesh_from_convex_hull(vertices: PackedVector3Array) -> ArrayMesh:
+	var convex_shape: ConvexPolygonShape3D = ConvexPolygonShape3D.new()
+	convex_shape.points = vertices
+	return create_mesh_from_convex_shape(convex_shape)
+# written by claude 4.5
+## Converts the given [ConvexPolygonShape3D] to an [ArrayMesh] with normals and indices
+static func create_mesh_from_convex_shape(convex_shape: ConvexPolygonShape3D) -> ArrayMesh:
+	# Get the faces (each face is a triangle with 3 vertex indices)
+	var faces = convex_shape.get_debug_mesh().generate_triangle_mesh().get_faces()
+	
+	# Prepare mesh arrays
+	var arrays = []
+	arrays.resize(Mesh.ARRAY_MAX)
+	
+	var mesh_vertices = PackedVector3Array()
+	var mesh_normals = PackedVector3Array()
+	var mesh_indices = PackedInt32Array()
+	
+	# Process faces (groups of 3 vertices)
+	for i in range(0, faces.size(), 3):
+		var v1 = faces[i]
+		var v2 = faces[i + 1]
+		var v3 = faces[i + 2]
+		
+		# Calculate face normal
+		var edge1 = v2 - v1
+		var edge2 = v3 - v1
+		var normal = edge1.cross(edge2).normalized()
+		
+		# Add vertices and normals
+		var base_index = mesh_vertices.size()
+		mesh_vertices.append(v1)
+		mesh_vertices.append(v2)
+		mesh_vertices.append(v3)
+		
+		mesh_normals.append(normal)
+		mesh_normals.append(normal)
+		mesh_normals.append(normal)
+		
+		# Add indices
+		mesh_indices.append(base_index)
+		mesh_indices.append(base_index + 1)
+		mesh_indices.append(base_index + 2)
+	
+	arrays[Mesh.ARRAY_VERTEX] = mesh_vertices
+	arrays[Mesh.ARRAY_NORMAL] = mesh_normals
+	arrays[Mesh.ARRAY_INDEX] = mesh_indices
+	
+	# Create the mesh
+	var mesh = ArrayMesh.new()
+	mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES, arrays)
+	
+	return mesh
 
 ## Returns a MeshInstance3D object whose mesh is a box with the given size and material
 static func create_box_3d(size: Vector3 = Vector3.ONE, mat: Material = null) -> MeshInstance3D:

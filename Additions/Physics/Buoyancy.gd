@@ -134,7 +134,7 @@ func _apply_forces():
 						DebugDraw.draw_line_3d(vert_a, vert_b, Color.GREEN, 2)
 						DebugDraw.draw_line_3d(vert_b, vert_c, Color.GREEN, 2)
 						DebugDraw.draw_line_3d(vert_a, vert_c, Color.GREEN, 2)
-					var triangle_normal = collider_data.collider.to_global(local_triangle.normal) - collider_data.collider.global_position
-					var force: Vector3 = rho * gravity.y * abs(get_water_displacement_at(triangle_center)) * local_triangle.area * triangle_normal
+					var triangle_normal = collider_data.collider.global_transform * local_triangle.normal
+					var force: Vector3 = rho * gravity.y * -get_water_displacement_at(triangle_center) * local_triangle.area * triangle_normal
 					force = Vector3(0, force.y, 0)
-					_floater.apply_force(force, triangle_center - _floater.global_position)
+					_floater.apply_force(force, _floater.to_local(triangle_center))
