@@ -77,7 +77,15 @@ static func display_frustum_at(cam: Camera3D, z: float, color: Color = Color.WHI
 
 ## Returns the currently active 2D camera. Returns null if there are no active cameras.
 static func get_active_camera_2d() -> Camera3D:
-	return NodeHelpers.get_child_of_type(Engine.get_main_loop().current_scene, Viewport).get_camera_2d() if !Engine.is_editor_hint() else EditorInterface.get_editor_viewport_3d().get_camera_2d()
+	if not Engine.is_editor_hint():
+		return NodeHelpers.get_child_of_type(Engine.get_main_loop().current_scene, Viewport).get_camera_2d()
+	else:
+		var editor_interface = Engine.get_singleton("EditorInterface")
+		return editor_interface.get_editor_viewport_3d().get_camera_2d()
 ## Returns the currently active 3D camera. Returns null if there are no active cameras.
 static func get_active_camera_3d() -> Camera3D:
-	return NodeHelpers.get_child_of_type(Engine.get_main_loop().current_scene, Viewport).get_camera_3d() if !Engine.is_editor_hint() else EditorInterface.get_editor_viewport_3d().get_camera_3d()
+	if not Engine.is_editor_hint():
+		return NodeHelpers.get_child_of_type(Engine.get_main_loop().current_scene, Viewport).get_camera_3d()
+	else:
+		var editor_interface = Engine.get_singleton("EditorInterface")
+		return editor_interface.get_editor_viewport_3d().get_camera_3d()

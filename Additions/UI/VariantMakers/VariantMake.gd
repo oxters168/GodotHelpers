@@ -104,7 +104,11 @@ func set_type_from_property(property: Dictionary):
 func _init():
 	# primitives tab
 	var primitives: Array = VariantMake.get_primitives()
-	_primitive_opt_btn = UIHelpers.option_btn_wicons(primitives.map(func(p_type): return type_string(p_type)), 0, primitives.map(func(p_type): return EditorInterface.get_editor_theme().get_icon(type_string(p_type), "EditorIcons")))
+	_primitive_opt_btn = UIHelpers.option_btn_wicons(
+		primitives.map(func(p_type): return type_string(p_type)),
+		0,
+		primitives.map(func(p_type): var editor_interface2 = Engine.get_singleton("EditorInterface"); return editor_interface2.get_editor_theme().get_icon(type_string(p_type), "EditorIcons"))
+	)
 	_primitive_opt_btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	_primitive_opt_btn.item_selected.connect(func(index):
 		constructor_index = 0
@@ -150,7 +154,8 @@ func _init():
 	_constructor_picker = MenuButton.new()
 	_constructor_picker.size_flags_horizontal = Control.SIZE_SHRINK_END
 	_constructor_picker.size_flags_vertical = Control.SIZE_SHRINK_BEGIN
-	_constructor_picker.icon = EditorInterface.get_editor_theme().get_icon("GuiTabMenu", "EditorIcons")
+	var editor_interface = Engine.get_singleton("EditorInterface")
+	_constructor_picker.icon = editor_interface.get_editor_theme().get_icon("GuiTabMenu", "EditorIcons")
 	_constructor_picker.get_popup().index_pressed.connect(func(index):
 		constructor_index = index
 		_refresh_view(constructor_index)

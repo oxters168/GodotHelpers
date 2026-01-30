@@ -17,13 +17,16 @@ static func to_enum_hint_string(values: Array) -> String:
 	return hint_string
 
 ## Creates a property with the given [param name] that would be a dropdown list of all the [param values]
-static func create_enum_property(name: String, values: Array) -> Dictionary:
+static func create_enum_property(name: StringName, values: Array) -> Dictionary:
 	return create_property(name, Enums.VariantType.TYPE_INT, "", PROPERTY_HINT_ENUM, to_enum_hint_string(values), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE | PROPERTY_USAGE_CLASS_IS_ENUM)
 ## Creates a property with the given [param name] that would be a toggle
-static func create_toggle_property(name: String) -> Dictionary:
-	return create_property(name, Enums.VariantType.TYPE_BOOL, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT)
+static func create_toggle_property(name: StringName) -> Dictionary:
+	return create_property(name, Enums.VariantType.TYPE_BOOL)
+## Creates a property with the given [param name] that would be a float input field
+static func create_float_property(name: StringName) -> Dictionary:
+	return create_property(name, Enums.VariantType.TYPE_FLOAT)
 ## Creates a property with the given [param name] that would be a category
-static func create_category_property(name: String) -> Dictionary:
+static func create_category_property(name: StringName) -> Dictionary:
 	return create_property(name, Enums.VariantType.TYPE_NIL, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY)
 
 ## [param name] is the property's name, as a String;
@@ -32,14 +35,14 @@ static func create_category_property(name: String) -> Dictionary:
 ## [param hint] is how the property is meant to be edited (see PropertyHint);
 ## [param hint_string] depends on the hint (see PropertyHint);
 ## [param usage] is a combination of PropertyUsageFlags.
-static func create_property(name: String, type: Enums.VariantType, clazz_name: StringName = "", hint: int = PROPERTY_HINT_NONE, hint_string: String = "", usage: int = PROPERTY_USAGE_DEFAULT) -> Dictionary:
+static func create_property(name: StringName, type: Enums.VariantType, clazz_name: StringName = "", hint: int = PROPERTY_HINT_NONE, hint_string: String = "", usage: int = PROPERTY_USAGE_DEFAULT) -> Dictionary:
 	return {
 		"name" = name,
 		"class_name" = clazz_name,
 		"type" = type,
 		"hint" = hint,
 		"hint_string" = hint_string,
-		"usage" = usage
+		"usage" = usage,
 	}
 
 ## Turns an array of properties into a string that looks like the parameters of a function

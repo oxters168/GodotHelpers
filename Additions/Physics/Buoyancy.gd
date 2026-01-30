@@ -1,8 +1,16 @@
+@tool
 extends Node3D
 ## This script is intended to be added as a child of an object who is meant to float. The parent should be of type or inherits [RigidBody3D].
 ## All descendant [CollisionShape3D] objects will be used to determine where the surfaces of the object are to apply forces on.
 ## Reference: https://www.habrador.com/tutorials/unity-boat-tutorial/3-buoyancy/
 class_name Buoyancy
+
+enum DampOverrideMode {
+    DISABLED,       ## Leaves current damp as is
+    COMBINE,        ## Add to current damp
+    REPLACE,        ## Replace current damp entirely
+    MULTIPLY        ## Multiply current damp
+}
 
 ## The world height of the water plane, if you'd like non-planar water then set getWaterDisplacementAt in script
 @export var waterLevel: float = 0
@@ -10,20 +18,39 @@ class_name Buoyancy
 ## If not set, will use the waterLevel variable.
 # var getWaterDisplacementAt: Callable # Vector3 -> float
 
-signal on_enter_water(obj: RigidBody3D)
-signal on_exit_water(obj: RigidBody3D)
+signal on_submerged(obj: RigidBody3D)
+signal on_emerged(obj: RigidBody3D)
 
 var _floater: RigidBody3D
-var _freshly_underwater: bool = true
+var _freshly_submerged: bool = true
 
 ## Density of liquid
 @export var rho: float = 150
-## Should the triangle data be recalculated each time the object goes underwater
-@export var recalculate_triangles_on_water_entry: bool = false
+## Should the triangle data be recalculated each time the object is submerged
+@export var recalculate_triangles_on_submerge: bool = false
 ## Show debug data
 @export var debug: bool = false
 ## Show bounds when debugging
 @export var show_bounds: bool = false
+## The override mode used for linear damping
+var linear_damp_override: DampOverrideMode = DampOverrideMode.COMBINE:
+	set(new_override):
+		linear_damp_override = new_override
+		notify_property_list_changed()
+## The rate at which this object will stop moving when submerged. Represents the linear velocity lost per second.
+var linear_damp: float = 2
+## The override mode used for angular damping
+var angular_damp_override: DampOverrideMode = DampOverrideMode.COMBINE:
+	set(new_override):
+		angular_damp_override = new_override
+		notify_property_list_changed()
+## The rate at which this object will stop spinning when submerged. Represents the angular velocity lost per second.
+var angular_damp: float = 2
+
+## The linear damp of the floater when it submerged
+var _orig_linear_damp: float
+## The angular damp of the floater when it submerged
+var _orig_angular_damp: float
 
 # CollisionShape3D -> Array[Array[MeshHelpers.Triangle]]
 # var _all_collider_data: Dictionary = {}
@@ -39,27 +66,77 @@ class ColliderData:
 	func _init(col: CollisionShape3D, surf: Array):
 		collider = col
 		surfaces = surf
+
+func _get_property_list():
+	var property_list: Array = []
+	property_list.append(PropertyHelpers.create_category_property("Linear Damp"))
+	property_list.append(PropertyHelpers.create_enum_property(&"linear_damp_override", DampOverrideMode.keys()))
+	if linear_damp_override != DampOverrideMode.DISABLED:
+		property_list.append(PropertyHelpers.create_float_property(&"linear_damp"))
+	property_list.append(PropertyHelpers.create_category_property("Angular Damp"))
+	property_list.append(PropertyHelpers.create_enum_property(&"angular_damp_override", DampOverrideMode.keys()))
+	if angular_damp_override != DampOverrideMode.DISABLED:
+		property_list.append(PropertyHelpers.create_float_property(&"angular_damp"))
+	
+	return property_list
 	
 func _ready():
-	_floater = NodeHelpers.get_parent_of_type(self, RigidBody3D)
-	recalculate_triangle_data()
+	if not Engine.is_editor_hint():
+		_floater = NodeHelpers.get_parent_of_type(self, RigidBody3D)
+		recalculate_triangle_data()
 func _physics_process(_delta):
-	var underwater = is_underwater()
-	if debug:
-		var collision_shapes = NodeHelpers.get_children_of_type(_floater, CollisionShape3D)
-		DebugDraw.set_text(str(_floater, "_buoyancy"), str("is under water" if underwater else "is above water", " has ", collision_shapes.size(), " collider(s) with collider data for ", _all_collider_data.size()))
-	if underwater:
-		# each time we enter the water, recalculate our triangle data
-		if _freshly_underwater:
-			if recalculate_triangles_on_water_entry:
-				recalculate_triangle_data()
-			on_enter_water.emit(_floater)
-		_freshly_underwater = false
-		_apply_forces()
-	else:
-		if !_freshly_underwater:
-			on_exit_water.emit(_floater)
-		_freshly_underwater = true
+	if not Engine.is_editor_hint():
+		var underwater = is_underwater()
+		if debug:
+			var collision_shapes = NodeHelpers.get_children_of_type(_floater, CollisionShape3D)
+			DebugDraw.set_text(str(_floater, "_buoyancy"), str("is under water" if underwater else "is above water", " has ", collision_shapes.size(), " collider(s) with collider data for ", _all_collider_data.size()))
+		if underwater:
+			# each time we enter the water, recalculate our triangle data
+			if _freshly_submerged:
+				if recalculate_triangles_on_submerge:
+					recalculate_triangle_data()
+				_on_submerged()
+			_freshly_submerged = false
+			_apply_forces()
+		else:
+			if !_freshly_submerged:
+				_on_emerged()
+			_freshly_submerged = true
+
+func _on_submerged() -> void:
+	_orig_linear_damp = _floater.linear_damp
+	_orig_angular_damp = _floater.angular_damp
+	match linear_damp_override:
+		DampOverrideMode.COMBINE:
+			_floater.linear_damp += linear_damp
+		DampOverrideMode.REPLACE:
+			_floater.linear_damp = linear_damp
+		DampOverrideMode.MULTIPLY:
+			_floater.linear_damp *= linear_damp
+	match angular_damp_override:
+		DampOverrideMode.COMBINE:
+			_floater.angular_damp += angular_damp
+		DampOverrideMode.REPLACE:
+			_floater.angular_damp = angular_damp
+		DampOverrideMode.MULTIPLY:
+			_floater.angular_damp *= angular_damp
+	on_submerged.emit(_floater)
+func _on_emerged() -> void:
+	match linear_damp_override:
+		DampOverrideMode.COMBINE:
+			_floater.linear_damp -= linear_damp
+		DampOverrideMode.REPLACE:
+			_floater.linear_damp = _orig_linear_damp
+		DampOverrideMode.MULTIPLY:
+			_floater.linear_damp /= linear_damp
+	match angular_damp_override:
+		DampOverrideMode.COMBINE:
+			_floater.angular_damp -= angular_damp
+		DampOverrideMode.REPLACE:
+			_floater.angular_damp = _orig_angular_damp
+		DampOverrideMode.MULTIPLY:
+			_floater.angular_damp /= angular_damp
+	on_emerged.emit(_floater)
 
 func get_water_displacement_at(pos: Vector3) -> float:
 	return pos.y - waterLevel
