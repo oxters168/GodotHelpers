@@ -22,6 +22,8 @@ var _listening_collider: CollisionShape3D
 		subdivide = new_subdivide
 		_refresh_plane()
 
+@export var simple_buoyancy: bool = true
+
 @export_group("Water Material")
 @export var beer_factor: float = 0.8:
 	set(new_beer_factor):
@@ -100,3 +102,14 @@ func _refresh_plane():
 	_mesh_instance.mesh.size = size
 	_mesh_instance.mesh.subdivide_width = subdivide.x
 	_mesh_instance.mesh.subdivide_depth = subdivide.y
+
+func is_point_submerged(point: Vector3) -> bool:
+	if simple_buoyancy:
+		return point.y < global_position.y
+	else:
+		return super.is_point_submerged(point)
+func get_submerged_displacement(point: Vector3) -> Vector3:
+	if simple_buoyancy:
+		return Vector3(0, global_position.y - point.y, 0)
+	else:
+		return super.get_submerged_displacement(point)

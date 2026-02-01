@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://b8xnonw3cjwqf"]
+[gd_scene format=3 uid="uid://b8xnonw3cjwqf"]
 
 [ext_resource type="Script" uid="uid://5drn1umoq4ly" path="res://godot_helpers/Additions/Examples/PointWithinCollisionShape/PointWithinCollisionShapeExample.gd" id="1_hke5u"]
 
@@ -20,33 +20,33 @@ height = 8.0
 height = 9.0
 radius = 4.0
 
-[node name="PointWithinCollisionShapeExample" type="Node3D"]
+[node name="PointWithinCollisionShapeExample" type="Node3D" unique_id=1784408026]
 
-[node name="PointWithinCollisionShapeExample" type="Node3D" parent="." node_paths=PackedStringArray("target", "collision_shapes")]
+[node name="PointWithinCollisionShapeExample" type="Node3D" parent="." unique_id=1801930768 node_paths=PackedStringArray("target", "collision_shapes")]
 script = ExtResource("1_hke5u")
 target = NodePath("../Target")
 collision_shapes = [NodePath("../SphereShape3D"), NodePath("../BoxShape3D"), NodePath("../CapsuleShape3D"), NodePath("../CylinderShape3D2")]
 metadata/_custom_type_script = "uid://5drn1umoq4ly"
 
-[node name="Target" type="MeshInstance3D" parent="."]
+[node name="Target" type="MeshInstance3D" parent="." unique_id=1159729844]
 mesh = SubResource("SphereMesh_hke5u")
 
-[node name="SphereShape3D" type="CollisionShape3D" parent="."]
+[node name="SphereShape3D" type="CollisionShape3D" parent="." unique_id=1422971007]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -10.54019, 6.3624024, 14.579123)
 shape = SubResource("SphereShape3D_xphif")
 debug_color = Color(1, 0, 0, 1)
 
-[node name="BoxShape3D" type="CollisionShape3D" parent="."]
-transform = Transform3D(0.5421428, 0.7021869, -0.46153527, 0.2071027, 0.42065555, 0.88326514, 0.8143646, -0.5744411, 0.08263057, 8.722716, -6.415127, 5.9919324)
+[node name="BoxShape3D" type="CollisionShape3D" parent="." unique_id=1974381911]
+transform = Transform3D(0.5421428, 0.7021869, -0.46153525, 0.20710269, 0.42065552, 0.8832652, 0.8143646, -0.5744411, 0.08263057, 8.722716, -6.415127, 5.9919324)
 shape = SubResource("BoxShape3D_hke5u")
 debug_color = Color(1, 0, 0, 1)
 
-[node name="CapsuleShape3D" type="CollisionShape3D" parent="."]
+[node name="CapsuleShape3D" type="CollisionShape3D" parent="." unique_id=550629434]
 transform = Transform3D(0.588615, -0.7431025, 0.31832513, 0.033183724, 0.41564295, 0.90892243, -0.8077323, -0.5244421, 0.2693125, 7.216895, 2.6022882, -9.262393)
 shape = SubResource("CapsuleShape3D_ai0y8")
 debug_color = Color(1, 0, 0, 1)
 
-[node name="CylinderShape3D2" type="CollisionShape3D" parent="."]
+[node name="CylinderShape3D2" type="CollisionShape3D" parent="." unique_id=734608460]
 transform = Transform3D(0.7097363, 0.70322156, -0.041878805, -0.4112983, 0.36537826, -0.8350644, -0.5719337, 0.60990024, 0.54855597, -20.563244, -8.929678, -19.288101)
 shape = SubResource("CylinderShape3D_w6u3m")
 debug_color = Color(1, 0, 0, 1)

@@ -27,9 +27,11 @@ var move_input = Vector2()
 ## "move_lat_neg", "move_lat_pos"
 var move_lat_input: float = 0
 
-func _init(init_angle: Vector3 = Vector3.ZERO, init_pos: Vector3 = Vector3.ZERO):
-	angle = init_angle
-	position = init_pos
+func _init(set_angle: bool = false, init_angle: Vector3 = Vector3.ZERO, set_pos: bool = false, init_pos: Vector3 = Vector3.ZERO):
+	if set_angle:
+		angle = init_angle
+	if set_pos:
+		position = init_pos
 
 func _input(event):
 	if mouse_input && event is InputEventMouseMotion:

@@ -70,9 +70,8 @@ func _process_buoyancy():
         for triangles in floater_data[floater_collision_shape]:
           for local_triangle in triangles:
             var triangle_center = floater_collision_shape.to_global(local_triangle.center)
-            var area_collision_shape: CollisionShape3D = get_collision_shape_containing_pos(triangle_center)
             # if submerged
-            if area_collision_shape:
+            if is_point_submerged(triangle_center):
               if debug:
                 var vert_a = floater_collision_shape.to_global(local_triangle.vertexA)
                 var vert_b = floater_collision_shape.to_global(local_triangle.vertexB)
@@ -83,13 +82,14 @@ func _process_buoyancy():
                 # DebugDraw.draw_ray_3d(triangle.center, triangle.normal, 1, Color.BLUE, 2)
               # TODO: Make force work with any gravity orientation, not just the assumed up direction
               # print_debug(rho, " * ", gravity.y, " * ", abs(get_water_displacement_at(triangle.center)), " * ", triangle.area, " * ", triangle.normal)
-              var triangle_normal = floater_collision_shape.global_transform * local_triangle.normal
-              var submerged_displacement: Vector3 = MeshHelpers.point_to_surface_of_collision_shape(area_collision_shape, triangle_center)
+              var triangle_normal = floater_collision_shape.global_basis * local_triangle.normal
+              var submerged_displacement: Vector3 = get_submerged_displacement(triangle_center)
               var floater_body: RigidBody3D = NodeHelpers.get_parent_of_type(floater_collision_shape, RigidBody3D)
               var gravity_strength: float = floater_body.get_gravity().dot(submerged_displacement.normalized())
               var constant_force_strength: float = floater_body.constant_force.dot(submerged_displacement.normalized())
               var force: Vector3 = rho * min(gravity_strength + constant_force_strength, -1) * submerged_displacement * local_triangle.area * triangle_normal
-              force = Vector3(0, force.y, 0)
+              if debug:
+                DebugDraw.draw_line_3d(triangle_center, triangle_center + force, Color.BLUE)
               floating_obj.apply_force(force, floating_obj.to_local(triangle_center))
 
 func _on_body_entered(body: Node3D):
@@ -103,6 +103,11 @@ func _on_body_exited(body: Node3D):
   else:
     _current_floaters.erase(body)
 
+func is_point_submerged(point: Vector3) -> bool:
+  return get_collision_shape_containing_pos(point) != null
+func get_submerged_displacement(point: Vector3) -> Vector3:
+  var area_collision_shape: CollisionShape3D = get_collision_shape_containing_pos(point)
+  return MeshHelpers.point_to_surface_of_collision_shape(area_collision_shape, point)
 func get_collision_shape_containing_pos(pos: Vector3) -> CollisionShape3D:
   for collision_shape in _collision_shapes:
     if MeshHelpers.is_point_in_collision_shape(collision_shape, pos):

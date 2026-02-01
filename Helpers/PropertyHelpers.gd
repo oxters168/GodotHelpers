@@ -28,6 +28,9 @@ static func create_float_property(name: StringName) -> Dictionary:
 ## Creates a property with the given [param name] that would be a category
 static func create_category_property(name: StringName) -> Dictionary:
 	return create_property(name, Enums.VariantType.TYPE_NIL, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY)
+## Creates a property with the given [param name] that would be a scene object
+static func create_scene_object_property(name: StringName, clazz_name: StringName) -> Dictionary:
+	return create_property(name, Enums.VariantType.TYPE_OBJECT, clazz_name, PROPERTY_HINT_NODE_TYPE)
 
 ## [param name] is the property's name, as a String;
 ## [param type] is the property's type;
