@@ -11,11 +11,14 @@ enum Action { LOOK_HOR_POS, LOOK_HOR_NEG, LOOK_VER_POS, LOOK_VER_NEG, LOOK_BTN }
 ## Current angle of camera on each axis in degrees
 @export var angle: Vector3 = Vector3()
 ## Whether to limit the camera angles between a min and max value
-@export var limit_angle: bool = false
+var limit_angle: bool = false:
+	set(value):
+		limit_angle = value
+		notify_property_list_changed()
 ## The minimum angle in degrees value of each axis, only works if limit_angle is set to true
-@export var min_angle: Vector3 = Vector3.ONE * -360
+var min_angle: Vector3 = Vector3.ONE * -360
 ## The maximum angle in degrees value of each axis, only works if limit_angle is set to true
-@export var max_angle: Vector3 = Vector3.ONE * 360
+var max_angle: Vector3 = Vector3.ONE * 360
 ## Multiplier applied to look_input when being added to angle
 @export var look_sensitivity: float = 1.0
 ## How much to linearly offset the camera from where it will orbit the target
@@ -37,8 +40,8 @@ enum Action { LOOK_HOR_POS, LOOK_HOR_NEG, LOOK_VER_POS, LOOK_VER_NEG, LOOK_BTN }
 ## Stores the input received from the mouse or from the input map
 var input_vector: Vector2 = Vector2()
 
-@export_category("Input")
-@export var look_input_enabled: bool:
+# @export_category("Input")
+var look_input_enabled: bool:
 	set(value):
 		look_input_enabled = value
 		notify_property_list_changed()
@@ -51,7 +54,14 @@ var _input_map: Array[int]
 ## https://forum.godotengine.org/t/where-can-i-find-more-hidden-get-property-list-functionality-for-arrays-or-other-types/9846/3
 func _get_property_list():
 	var property_list: Array = []
-	# property_list.append(PropertyHelpers.create_category_property("Input"))
+	property_list.append(PropertyHelpers.create_category_property("Limit Angle"))
+	property_list.append(PropertyHelpers.create_toggle_property(&"limit_angle"))
+	if limit_angle:
+		property_list.append(PropertyHelpers.create_vector3_property(&"min_angle"))
+		property_list.append(PropertyHelpers.create_vector3_property(&"max_angle"))
+
+	property_list.append(PropertyHelpers.create_category_property("Input"))
+	property_list.append(PropertyHelpers.create_toggle_property(&"look_input_enabled"))
 
 	var action_keys: Array = Action.keys()
 	if look_input_enabled:
@@ -96,7 +106,7 @@ func _init(init_angle: Vector3 = Vector3.ZERO, init_pos: Vector3 = Vector3.ZERO)
 func _input(event):
 	if !Engine.is_editor_hint():
 		if mouse_input && event is InputEventMouseMotion:
-			if _look_btn_enabled && Input.is_action_pressed(InputHelpers.get_input_action(_input_map[Action.LOOK_BTN])):
+			if not _look_btn_enabled or (_look_btn_enabled && Input.is_action_pressed(InputHelpers.get_input_action(_input_map[Action.LOOK_BTN]))):
 				var mouse_diff = -event.relative
 				input_vector = VectorHelpers.normalize_input(input_vector + mouse_diff)
 

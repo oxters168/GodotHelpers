@@ -30,9 +30,9 @@ func _ready() -> void:
     _collision_shapes.append_array(NodeHelpers.get_children_of_type(self, CollisionShape3D))
   else:
     linear_damp_space_override = Area3D.SPACE_OVERRIDE_REPLACE
-    linear_damp = 2
+    linear_damp = 1.4
     angular_damp_space_override = Area3D.SPACE_OVERRIDE_REPLACE
-    angular_damp = 2
+    angular_damp = 1.4
 
 
 func _physics_process(_delta):
@@ -40,7 +40,7 @@ func _physics_process(_delta):
     _process_buoyancy()
 
 func _process_buoyancy():
-  for floating_obj in _current_floaters.keys():
+  for floating_obj: CollisionObject3D in _current_floaters.keys():
     # if an object was intersected with and we are the water tile in charge of applying forces to it
     if _current_floaters[floating_obj][0] == self:
       # processed_floater = true
@@ -89,19 +89,23 @@ func _process_buoyancy():
               var constant_force_strength: float = floater_body.constant_force.dot(submerged_displacement.normalized())
               var force: Vector3 = rho * min(gravity_strength + constant_force_strength, -1) * submerged_displacement * local_triangle.area * triangle_normal
               if debug:
-                DebugDraw.draw_line_3d(triangle_center, triangle_center + force, Color.BLUE)
-              floating_obj.apply_force(force, floating_obj.to_local(triangle_center))
+                DebugDraw.draw_line_3d(triangle_center, triangle_center + (force / 100), Color.BLUE)
+              floating_obj.apply_force(force, triangle_center - floating_obj.global_position)
 
 func _on_body_entered(body: Node3D):
-  if _current_floaters.has(body):
-    _current_floaters[body].append(self)
-  else:
-    _current_floaters[body] = [self]
+  var has_buoyancy: bool = NodeHelpers.get_child_of_type(body, Buoyancy) != null
+  if not has_buoyancy:
+    if _current_floaters.has(body):
+      _current_floaters[body].append(self)
+    else:
+      _current_floaters[body] = [self]
 func _on_body_exited(body: Node3D):
-  if _current_floaters[body].size() > 1:
-    _current_floaters[body].erase(self)
-  else:
-    _current_floaters.erase(body)
+  var has_buoyancy: bool = NodeHelpers.get_child_of_type(body, Buoyancy) != null
+  if not has_buoyancy:
+    if _current_floaters[body].size() > 1:
+      _current_floaters[body].erase(self)
+    else:
+      _current_floaters.erase(body)
 
 func is_point_submerged(point: Vector3) -> bool:
   return get_collision_shape_containing_pos(point) != null

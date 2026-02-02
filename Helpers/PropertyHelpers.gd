@@ -19,12 +19,15 @@ static func to_enum_hint_string(values: Array) -> String:
 ## Creates a property with the given [param name] that would be a dropdown list of all the [param values]
 static func create_enum_property(name: StringName, values: Array) -> Dictionary:
 	return create_property(name, Enums.VariantType.TYPE_INT, "", PROPERTY_HINT_ENUM, to_enum_hint_string(values), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_SCRIPT_VARIABLE | PROPERTY_USAGE_CLASS_IS_ENUM)
-## Creates a property with the given [param name] that would be a toggle
+## Creates a property with the given [param name] that would be a toggle field for a [bool]
 static func create_toggle_property(name: StringName) -> Dictionary:
 	return create_property(name, Enums.VariantType.TYPE_BOOL)
-## Creates a property with the given [param name] that would be a float input field
+## Creates a property with the given [param name] that would be a [float] input field
 static func create_float_property(name: StringName) -> Dictionary:
 	return create_property(name, Enums.VariantType.TYPE_FLOAT)
+## Create a property with the given [param name] that would be a [Vector3] input field
+static func create_vector3_property(name: StringName) -> Dictionary:
+	return create_property(name, Enums.VariantType.TYPE_VECTOR3)
 ## Creates a property with the given [param name] that would be a category
 static func create_category_property(name: StringName) -> Dictionary:
 	return create_property(name, Enums.VariantType.TYPE_NIL, "", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_CATEGORY)

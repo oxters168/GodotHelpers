@@ -7,8 +7,8 @@ class_name Buoyancy
 
 enum DampOverrideMode {
     DISABLED,       ## Leaves current damp as is
-    COMBINE,        ## Add to current damp
     REPLACE,        ## Replace current damp entirely
+    COMBINE,        ## Add to current damp
     MULTIPLY        ## Multiply current damp
 }
 
@@ -33,19 +33,19 @@ var _freshly_submerged: bool = true
 ## Show bounds when debugging
 @export var show_bounds: bool = false
 ## The override mode used for linear damping
-var linear_damp_override: DampOverrideMode = DampOverrideMode.COMBINE:
+var linear_damp_override: DampOverrideMode = DampOverrideMode.REPLACE:
 	set(new_override):
 		linear_damp_override = new_override
 		notify_property_list_changed()
 ## The rate at which this object will stop moving when submerged. Represents the linear velocity lost per second.
-var linear_damp: float = 2
+var linear_damp: float = 1.4
 ## The override mode used for angular damping
-var angular_damp_override: DampOverrideMode = DampOverrideMode.COMBINE:
+var angular_damp_override: DampOverrideMode = DampOverrideMode.REPLACE:
 	set(new_override):
 		angular_damp_override = new_override
 		notify_property_list_changed()
 ## The rate at which this object will stop spinning when submerged. Represents the angular velocity lost per second.
-var angular_damp: float = 2
+var angular_damp: float = 1.4
 
 ## The linear damp of the floater when it submerged
 var _orig_linear_damp: float
@@ -214,4 +214,4 @@ func _apply_forces():
 					var triangle_normal = collider_data.collider.global_transform * local_triangle.normal
 					var force: Vector3 = rho * gravity.y * -get_water_displacement_at(triangle_center) * local_triangle.area * triangle_normal
 					force = Vector3(0, force.y, 0)
-					_floater.apply_force(force, _floater.to_local(triangle_center))
+					_floater.apply_force(force, triangle_center - _floater.global_position)
