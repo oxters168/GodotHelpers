@@ -124,14 +124,14 @@ func _on_submerged() -> void:
 func _on_emerged() -> void:
 	match linear_damp_override:
 		DampOverrideMode.COMBINE:
-			_floater.linear_damp -= linear_damp
+			_floater.linear_damp = max(_floater.linear_damp - linear_damp, 0)
 		DampOverrideMode.REPLACE:
 			_floater.linear_damp = _orig_linear_damp
 		DampOverrideMode.MULTIPLY:
 			_floater.linear_damp /= linear_damp
 	match angular_damp_override:
 		DampOverrideMode.COMBINE:
-			_floater.angular_damp -= angular_damp
+			_floater.angular_damp = max(_floater.angular_damp - angular_damp, 0)
 		DampOverrideMode.REPLACE:
 			_floater.angular_damp = _orig_angular_damp
 		DampOverrideMode.MULTIPLY:
