@@ -11,6 +11,9 @@ class_name SpeedBoat
 ## The max turn speed of the boat in radians per second
 @export var max_turn_speed: float = 2 * PI
 
+## Show debug data
+@export var debug: bool = false
+
 func _physics_process(delta: float) -> void:
 	var input_vector: Vector2 = Input.get_vector("move_hor_neg", "move_hor_pos", "move_ver_neg", "move_ver_pos")
 	var direct_state: PhysicsDirectBodyState3D = PhysicsServer3D.body_get_direct_state(get_rid())
@@ -40,5 +43,6 @@ func _physics_process(delta: float) -> void:
 	var torque: Vector3 = global_up * physics_server_inertia.y * input_angular_accel
 	apply_torque(torque)
 
-	DebugDraw.set_text(str(self), str("velocity: ", current_velocity, " angular_velocity: ", current_angular_velocity))
+	if debug:
+		DebugDraw.set_text(str(self), str("velocity: ", current_velocity, " angular_velocity: ", current_angular_velocity))
 

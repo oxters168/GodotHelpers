@@ -1,0 +1,45 @@
+[gd_scene format=3 uid="uid://d038h4v6r02ev"]
+
+[ext_resource type="Script" uid="uid://dvt5sxxkp8els" path="res://godot_helpers/Additions/Cameras/OrbitCamera.gd" id="1_6xatv"]
+[ext_resource type="PackedScene" uid="uid://cmb7h0qob7ej2" path="res://godot_helpers/Additions/Examples/SpeedBoat/speed_boat.tscn" id="2_jlml5"]
+[ext_resource type="Script" uid="uid://b8ltpxfr3ah10" path="res://godot_helpers/Additions/Physics/Buoyancy.gd" id="3_1fyue"]
+[ext_resource type="Script" uid="uid://c3lnywjnhjww4" path="res://godot_helpers/Additions/Physics/Ocean.gd" id="4_5kb7l"]
+
+[node name="Node3D" type="Node3D" unique_id=1206301656]
+
+[node name="OrbitCamera" type="Camera3D" parent="." unique_id=101763231 node_paths=PackedStringArray("target")]
+script = ExtResource("1_6xatv")
+mouse_input = true
+target = NodePath("../SpeedBoat")
+limit_angle = false
+look_input_enabled = false
+metadata/_custom_type_script = "uid://dvt5sxxkp8els"
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2010214075]
+transform = Transform3D(0.70710677, 0.43045932, -0.5609855, 0, 0.7933533, 0.6087614, 0.70710677, -0.43045932, 0.5609855, 0, 20, 0)
+
+[node name="SpeedBoat" parent="." unique_id=1884655739 instance=ExtResource("2_jlml5")]
+transform = Transform3D(1, 0, 0, 0, 1.0000002, 0, 0, 0, 1.0000001, 0, 0, 0)
+collision_mask = 3
+
+[node name="SpeedBoat2" parent="." unique_id=1254659212 instance=ExtResource("2_jlml5")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3.3652954, 2.4478705, 0)
+collision_layer = 2
+
+[node name="Buoyancy" type="Node3D" parent="SpeedBoat2" unique_id=2030849819]
+script = ExtResource("3_1fyue")
+linear_damp_override = 2
+linear_damp = 1.4
+angular_damp_override = 2
+angular_damp = 1.4
+metadata/_custom_type_script = "uid://b8ltpxfr3ah10"
+
+[node name="Ocean" type="Node3D" parent="." unique_id=824312885 node_paths=PackedStringArray("target")]
+script = ExtResource("4_5kb7l")
+target = NodePath("../SpeedBoat")
+tile_distance = 2
+linear_damp_space_override = 3
+linear_damp = 1.4
+angular_damp_space_override = 3
+angular_damp = 1.4
+metadata/_custom_type_script = "uid://c3lnywjnhjww4"

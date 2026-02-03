@@ -1,0 +1,28 @@
+[gd_scene format=3 uid="uid://cmb7h0qob7ej2"]
+
+[ext_resource type="PackedScene" uid="uid://btrx6e2geim3b" path="res://godot_helpers/Additions/Examples/Assets/kenney_watercraft_pack/Prefabs/boat_speed_a_2.tscn" id="1_jmr0y"]
+[ext_resource type="Script" uid="uid://rm5pvmwu00gd" path="res://godot_helpers/Additions/Physics/Vehicles/Speedboat.gd" id="1_op7jw"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_jmr0y"]
+points = PackedVector3Array(-0.35350093, 0.28256872, 1.0307639, 0.82974625, 0.72421324, 0.6910903, 0.84572685, 0.5728722, 0.7042438, -0.5511, 1.3638806, -1.5742313, 0.43986812, 0.024230108, -1.2489715, 0.5511, 1.4884032, -1.6317123, -0.057646617, 1.1553512, 0.6694123, -0.67655873, 0.21053268, -1.384128, -0.8571589, 0.7239884, 0.6477525, 0.89948416, 0.82906413, -1.4973171, 0.040744986, 0.67289037, 1.6222539, 0.039298803, 0.03466377, 0.4923955, -0.59826225, 1.5245237, -1.3904376, -0.8649013, 0.72376084, -1.4078356, -0.4532064, 0.034580227, 0, 0.57850033, 1.5245237, -1.3904376, 0.6769647, 0.23380743, 0.4413269, 0.89948416, 0.93596447, 0.16015162, 0.796784, 0.42125866, -1.4113849, -0.84381264, 0.5283151, 0.63754916, 0.18817347, 0.22874013, 1.0896535, -0.40485403, 0.7735632, 1.3329266, -0.8656597, 0.93596447, 0.16015162, 0.3403646, 0.7738903, 1.4007472, -0.45342663, 0.034225333, -1.2317444, 0.2732047, 1.14993, 0.47185874, -0.6514195, 0.18138109, 0.3452707, 0.34243694, 0.57284325, 1.4594816, -0.36015683, 0.57386357, 1.4510225, 0.43146294, 0.03777294, 0.04884089, -0.059930965, 0.22266704, 1.1526124, -0.24526739, 1.1489601, 0.51761234)
+
+[sub_resource type="SphereMesh" id="SphereMesh_jmr0y"]
+radius = 0.1
+height = 0.2
+
+[node name="SpeedBoat" type="RigidBody3D" unique_id=1884655739]
+mass = 80.0
+center_of_mass_mode = 1
+center_of_mass = Vector3(0, 0, -0.2)
+script = ExtResource("1_op7jw")
+metadata/_custom_type_script = "uid://rm5pvmwu00gd"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=7891922]
+shape = SubResource("ConvexPolygonShape3D_jmr0y")
+
+[node name="boat-speed-a2" parent="CollisionShape3D" unique_id=457462224 instance=ExtResource("1_jmr0y")]
+
+[node name="com" type="MeshInstance3D" parent="." unique_id=707839299]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.25)
+mesh = SubResource("SphereMesh_jmr0y")
+skeleton = NodePath("")

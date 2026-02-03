@@ -1,0 +1,5 @@
+[gd_scene format=3 uid="uid://btrx6e2geim3b"]
+
+[ext_resource type="PackedScene" uid="uid://cev5ykbfonx20" path="res://godot_helpers/Additions/Examples/Assets/kenney_watercraft_pack/boat-speed-a.glb" id="1_ohbc4"]
+
+[node name="boat-speed-a2" instance=ExtResource("1_ohbc4")]
