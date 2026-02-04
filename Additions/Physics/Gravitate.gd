@@ -62,3 +62,4 @@ func _physics_process(_delta: float) -> void:
     _parent_body.constant_force -= _prev_force
     _parent_body.constant_force += force
     _prev_force = force
+    DebugDraw.draw_line_3d(_parent_body.global_position, _parent_body.global_position + force, Color.GREEN)

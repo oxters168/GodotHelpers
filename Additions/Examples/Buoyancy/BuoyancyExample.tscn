@@ -6,7 +6,8 @@
 [ext_resource type="Texture2D" uid="uid://6pxir3pix28r" path="res://godot_helpers/Additions/Shaders/Resources/WaterPerlinNoise.png" id="4_4hhnq"]
 [ext_resource type="Texture2D" uid="uid://dtxrwjsspcxyu" path="res://godot_helpers/Additions/Shaders/Resources/WaterDistortion.png" id="4_n50hy"]
 [ext_resource type="Script" uid="uid://cwq6n8hpwitsm" path="res://godot_helpers/Additions/Physics/Gravitate.gd" id="6_xhmp7"]
-[ext_resource type="Script" uid="uid://difyu20x4fj3a" path="res://godot_helpers/Additions/Cameras/FreeCamera.gd" id="7_0olvd"]
+[ext_resource type="PackedScene" uid="uid://cmb7h0qob7ej2" path="res://godot_helpers/Additions/Examples/SpeedBoat/speed_boat.tscn" id="8_40rxf"]
+[ext_resource type="Script" uid="uid://dvt5sxxkp8els" path="res://godot_helpers/Additions/Cameras/OrbitCamera.gd" id="9_a1dbc"]
 
 [sub_resource type="SphereShape3D" id="SphereShape3D_1085l"]
 radius = 10.0
@@ -64,20 +65,14 @@ size = Vector3(10, 10, 10)
 
 [node name="BuoyancyExample" type="Node3D" unique_id=1102682825]
 
-[node name="FreeCamera" type="Camera3D" parent="." unique_id=660727646]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 19.826458, 20.952677)
-script = ExtResource("7_0olvd")
-mouse_input = true
-metadata/_custom_type_script = "uid://difyu20x4fj3a"
-
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=196416228]
 transform = Transform3D(0.70710677, 0.61237246, -0.35355335, 0, 0.49999997, 0.86602545, 0.70710677, -0.61237246, 0.35355335, 0, 0, 0)
 
 [node name="WaterTile" type="Area3D" parent="." unique_id=421007849]
 linear_damp_space_override = 3
-linear_damp = 2.0
+linear_damp = 1.4
 angular_damp_space_override = 3
-angular_damp = 2.0
+angular_damp = 1.4
 script = ExtResource("2_whb2v")
 debug = true
 metadata/_custom_type_script = "uid://dbub6n8jfixth"
@@ -85,9 +80,9 @@ metadata/_custom_type_script = "uid://dbub6n8jfixth"
 [node name="BuoyantSphere3D" type="Area3D" parent="." unique_id=119023336]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, 0)
 linear_damp_space_override = 3
-linear_damp = 2.0
+linear_damp = 1.4
 angular_damp_space_override = 3
-angular_damp = 2.0
+angular_damp = 1.4
 script = ExtResource("1_1085l")
 debug = true
 metadata/_custom_type_script = "uid://saqufyga24rl"
@@ -102,9 +97,9 @@ surface_material_override/0 = SubResource("ShaderMaterial_n50hy")
 [node name="BuoyantCapsule3D" type="Area3D" parent="." unique_id=571743844]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -20, 20, 0)
 linear_damp_space_override = 3
-linear_damp = 2.0
+linear_damp = 1.4
 angular_damp_space_override = 3
-angular_damp = 2.0
+angular_damp = 1.4
 script = ExtResource("1_1085l")
 debug = true
 metadata/_custom_type_script = "uid://saqufyga24rl"
@@ -119,9 +114,9 @@ surface_material_override/0 = SubResource("ShaderMaterial_n50hy")
 [node name="BuoyantCylinder3D" type="Area3D" parent="." unique_id=1340649906]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 20, 0)
 linear_damp_space_override = 3
-linear_damp = 2.0
+linear_damp = 1.4
 angular_damp_space_override = 3
-angular_damp = 2.0
+angular_damp = 1.4
 script = ExtResource("1_1085l")
 debug = true
 metadata/_custom_type_script = "uid://saqufyga24rl"
@@ -136,9 +131,9 @@ surface_material_override/0 = SubResource("ShaderMaterial_n50hy")
 [node name="BuoyantBox3D" type="Area3D" parent="." unique_id=1026477436]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 20, -20)
 linear_damp_space_override = 3
-linear_damp = 2.0
+linear_damp = 1.4
 angular_damp_space_override = 3
-angular_damp = 2.0
+angular_damp = 1.4
 script = ExtResource("1_1085l")
 debug = true
 metadata/_custom_type_script = "uid://saqufyga24rl"
@@ -177,3 +172,23 @@ shape = SubResource("BoxShape3D_0olvd")
 
 [node name="MeshInstance3D" type="MeshInstance3D" parent="RigidBody3D2" unique_id=1723132167]
 mesh = SubResource("BoxMesh_40rxf")
+
+[node name="SpeedBoat" parent="." unique_id=1884655739 instance=ExtResource("8_40rxf")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 30.80567, 0)
+gravity_scale = 0.0
+
+[node name="Gravitate" type="Node3D" parent="SpeedBoat" unique_id=682454116 node_paths=PackedStringArray("target")]
+transform = Transform3D(1, 0, 0, 0, 0.99999994, 0, 0, 0, 1, 0, 0, 0)
+script = ExtResource("6_xhmp7")
+gravity_mode = 0
+target = NodePath("../../BuoyantSphere3D")
+acceleration = 9.8
+metadata/_custom_type_script = "uid://cwq6n8hpwitsm"
+
+[node name="OrbitCamera" type="Camera3D" parent="." unique_id=566443062 node_paths=PackedStringArray("target")]
+script = ExtResource("9_a1dbc")
+mouse_input = true
+target = NodePath("../SpeedBoat")
+limit_angle = false
+look_input_enabled = false
+metadata/_custom_type_script = "uid://dvt5sxxkp8els"
