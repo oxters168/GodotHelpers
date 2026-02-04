@@ -38,6 +38,7 @@ metadata/_custom_type_script = "uid://b8ltpxfr3ah10"
 script = ExtResource("4_5kb7l")
 target = NodePath("../SpeedBoat")
 tile_distance = 2
+debug = true
 linear_damp_space_override = 3
 linear_damp = 1.4
 angular_damp_space_override = 3
