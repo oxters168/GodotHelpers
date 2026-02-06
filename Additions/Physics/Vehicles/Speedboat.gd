@@ -15,7 +15,7 @@ class_name SpeedBoat
 @export var debug: bool = false
 
 func _physics_process(delta: float) -> void:
-	var input_vector: Vector2 = Input.get_vector("move_hor_neg", "move_hor_pos", "move_ver_neg", "move_ver_pos")
+	var input_vector: Vector2 = Vector2(Input.get_axis("move_hor_neg", "move_hor_pos"), Input.get_axis("move_ver_neg", "move_ver_pos"))
 	var direct_state: PhysicsDirectBodyState3D = PhysicsServer3D.body_get_direct_state(get_rid())
 	
 	var global_forward: Vector3 = NodeHelpers.get_global_forward(self)

@@ -1,5 +1,13 @@
 class_name PhysicsHelpers
 
+## Gets the velocity of the given rigidbody at the given global position
+## source: https://github.com/godotengine/godot-proposals/issues/7480#issue-1846709936
+static func get_velocity_at(body: RigidBody3D, position: Vector3) -> Vector3:
+	var velocity = body.linear_velocity
+	var angular_velocity = body.angular_velocity
+	var com = body.to_global(body.center_of_mass)
+	return velocity + angular_velocity.cross(position - com)
+
 ## Returns a value of seconds per physics tick
 static func get_fixed_delta_time():
 	return 1.0 / Engine.physics_ticks_per_second

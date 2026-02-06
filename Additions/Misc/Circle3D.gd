@@ -12,6 +12,11 @@ class_name Circle3D
   set(value):
     detail = value
     _redraw()
+## The color of the circle
+@export var color: Color = Color.WHITE:
+  set(value):
+    color = value
+    _redraw()
 
 var _immediate_geometry: ImmediateMesh
 
@@ -19,6 +24,7 @@ func _init() -> void:
   var mesh_instance: MeshInstance3D = MeshInstance3D.new()
   _immediate_geometry = ImmediateMesh.new()
   mesh_instance.mesh = _immediate_geometry
+  mesh_instance.material_override = _get_line_material()
   add_child(mesh_instance)
   _redraw()
 
@@ -32,8 +38,15 @@ func _redraw() -> void:
     var next_angle: float = angle_offset * (0 if i >= detail - 1 else (i + 1))
     var start: Vector3 = Vector3(sin(angle) * radius, cos(angle) * radius, 0)
     var end: Vector3 = Vector3(sin(next_angle) * radius, cos(next_angle) * radius, 0)
-    _immediate_geometry.surface_set_color(Color.BLUE)
+    _immediate_geometry.surface_set_color(color)
     _immediate_geometry.surface_add_vertex(start)
     _immediate_geometry.surface_add_vertex(end)    
     
   _immediate_geometry.surface_end()
+
+static func _get_line_material() -> StandardMaterial3D:
+  var mat : StandardMaterial3D
+  mat = StandardMaterial3D.new()
+  mat.flags_unshaded = true
+  mat.vertex_color_use_as_albedo = true
+  return mat

@@ -1,4 +1,4 @@
-## @brief Single-file autoload for debug drawing and printing.
+## Single-file autoload for debug drawing and printing.
 ## Draw and print on screen from anywhere in a single line of code.
 ## Find it quickly by naming it "DDD".
 
@@ -8,13 +8,13 @@
 extends CanvasLayer
 class_name DebugDraw
 
-## @brief How many frames HUD text lines remain shown after being invoked.
+## How many frames HUD text lines remain shown after being invoked.
 const TEXT_LINGER_FRAMES = 5
-## @brief How many frames lines remain shown after being drawn.
+## How many frames lines remain shown after being drawn.
 const LINES_LINGER_FRAMES = 1
-## @brief Color of the text drawn as HUD
+## Color of the text drawn as HUD
 const TEXT_COLOR = Color.WHITE
-## @brief Background color of the text drawn as HUD
+## Background color of the text drawn as HUD
 const TEXT_BG_COLOR = Color(0.3, 0.3, 0.3, 0.8)
 
 static var _editor_singleton : DebugDraw
@@ -38,6 +38,10 @@ static var _line_material_pool := []
 
 static var _lines_3d := []
 static var _line_immediate_geometry : ImmediateMesh
+## Array[Dictionary[Circle3D, int]]
+
+static var _circles_3d: Array[Dictionary] = []
+static var _circle_3d_pool: Array[Circle3D] = []
 
 func _init():		
 	process_mode = Node.PROCESS_MODE_ALWAYS
@@ -62,6 +66,7 @@ func _init():
 
 func _process(_delta: float):
 	DebugDraw._process_boxes()
+	DebugDraw._process_circles_3d()
 	DebugDraw._process_lines_3d()
 	DebugDraw._process_lines_2d()
 	_process_canvas()
@@ -86,7 +91,7 @@ static func _create_canvas_item():
 	canvas.position = Vector2(8, 8)
 	return canvas
 
-## @brief Draws the unshaded outline of a 3D cube.
+## Draws the unshaded outline of a 3D cube.
 ## @param position: world-space position of the center of the cube
 ## @param size: size of the cube in world units
 ## @param color
@@ -96,7 +101,24 @@ static func draw_cube(position: Vector3, size: float, color: Color = Color.WHITE
 	draw_box(position, Vector3(size, size, size), color, linger)
 
 
-## @brief Draws the unshaded outline of a 3D box.
+## Draws the unshaded outline of a circle in 3D.
+## @param position: world-space position of the center of the circle
+## @param radius: radius of the circle in world units
+## @param color
+## @param linger_frames: optionally makes the box remain drawn for longer
+static func draw_circle_3d(position: Vector3, rotation: Quaternion, radius: float, color: Color = Color.WHITE, linger_frames: int = 0):
+	_check_singleton_created_or_create()
+	var circle := _get_circle_3d()
+	circle.position = position
+	circle.quaternion = rotation
+	circle.radius = radius
+	circle.color = color
+	_circles_3d.append({
+		"node": circle,
+		"frame": Engine.get_frames_drawn() + LINES_LINGER_FRAMES + linger_frames
+	})
+
+## Draws the unshaded outline of a 3D box.
 ## @param position: world-space position of the center of the box
 ## @param size: size of the box in world units
 ## @param color
@@ -115,7 +137,7 @@ static func draw_box(position: Vector3, size: Vector3, color: Color = Color.WHIT
 	})
 
 
-## @brief Draws the unshaded outline of a 3D transform3Ded cube.
+## Draws the unshaded outline of a 3D transform3Ded cube.
 ## @param trans: transform of the cube. The basis defines its size.
 ## @param color
 static func draw_transformed_cube(trans: Transform3D, color: Color = Color.WHITE):
@@ -131,7 +153,7 @@ static func draw_transformed_cube(trans: Transform3D, color: Color = Color.WHITE
 	})
 
 
-## @brief Draws the basis of the given transform using 3 lines
+## Draws the basis of the given transform using 3 lines
 ##        of color red for X, green for Y, and blue for Z.
 ## @param transform
 ## @param scale: extra scale applied on top of the transform
@@ -142,7 +164,7 @@ static func draw_axes(_transform: Transform3D, _scale = 1.0, linger_frames: int 
 	draw_ray_3d(_transform.origin, _transform.basis.z, _scale, Color(0,0,1), linger_frames)
 
 
-## @brief Draws the unshaded outline of a 3D box.
+## Draws the unshaded outline of a 3D box.
 ## @param aabb: world-space box to draw as an AABB
 ## @param color
 ## @param linger_frames: optionally makes the box remain drawn for longer
@@ -159,7 +181,7 @@ static func draw_box_aabb(aabb: AABB, color = Color.WHITE, linger_frames: int = 
 		"frame": Engine.get_frames_drawn() + LINES_LINGER_FRAMES + linger_frames
 	})
 
-## @brief Draws an unshaded 2D line.
+## Draws an unshaded 2D line.
 ## @param a: begin position in world units
 ## @param b: end position in world units
 ## @param color
@@ -175,14 +197,14 @@ static func draw_line_2d(a: Vector2, b: Vector2, color: Color, parent: Node2D, l
 		"node": mi,
 		"frame": Engine.get_frames_drawn() + LINES_LINGER_FRAMES + linger_frames
 	})
-## @brief Draws an unshaded 2D line defined as a ray.
+## Draws an unshaded 2D line defined as a ray.
 ## @param origin: begin position in world units
 ## @param direction
 ## @param length: length of the line in world units
 ## @param color
 static func draw_ray_2d(origin: Vector2, direction: Vector2, length: float, color: Color, parent: Node2D, linger_frames: int = 0):
 	draw_line_2d(origin, origin + direction * length, color, parent, linger_frames)
-## @brief Draws the unshaded outline of a 2D box.
+## Draws the unshaded outline of a 2D box.
 ## @param position: world-space position of the center of the box
 ## @param size: size of the box in world units
 ## @param color
@@ -202,7 +224,7 @@ static func draw_box_2d(position: Vector2, size: Vector2, color: Color, parent: 
 	# left line
 	draw_line_2d(position + down + left, position + up + left, color, parent, linger_frames)
 
-## @brief Draws an unshaded 3D line.
+## Draws an unshaded 3D line.
 ## @param a: begin position in world units
 ## @param b: end position in world units
 ## @param color
@@ -213,7 +235,7 @@ static func draw_line_3d(a: Vector3, b: Vector3, color: Color, linger_frames: in
 		Engine.get_frames_drawn() + LINES_LINGER_FRAMES + linger_frames,
 	])
 
-## @brief Draws an unshaded 3D line defined as a ray.
+## Draws an unshaded 3D line defined as a ray.
 ## @param origin: begin position in world units
 ## @param direction
 ## @param length: length of the line in world units
@@ -222,7 +244,7 @@ static func draw_ray_3d(origin: Vector3, direction: Vector3, length: float = 1, 
 	draw_line_3d(origin, origin + direction * length, color, linger_frames)
 
 
-## @brief Adds a text monitoring line to the HUD, from the provided value.
+## Adds a text monitoring line to the HUD, from the provided value.
 ## It will be shown as such: - {key}: {text}
 ## Multiple calls with the same `key` will override previous text.
 ## @param key: identifier of the line
@@ -233,6 +255,20 @@ static func set_text(key: String, value):
 		"text": value if typeof(value) == TYPE_STRING else str(value),
 		"frame": Engine.get_frames_drawn() + TEXT_LINGER_FRAMES
 	}
+
+static func _get_circle_3d() -> Circle3D:
+	var circle : Circle3D
+	if len(_circle_3d_pool) == 0:
+		circle = Circle3D.new()
+		_get_singleton().add_child(circle)
+	else:
+		circle = _circle_3d_pool[-1]
+		_circle_3d_pool.pop_back()
+	return circle
+
+static func _recycle_circle_3d(circle: Circle3D):
+	circle.hide()
+	_circle_3d_pool.append(circle)
 
 static func _get_box() -> MeshInstance3D:
 	var mi : MeshInstance3D
@@ -283,6 +319,27 @@ static func _recycle_line_material(mat: StandardMaterial3D):
 	_line_material_pool.append(mat)
 
 
+static func _process_3d_circles_delayed_free(items: Array[Dictionary]):
+	var i := 0
+	while i < len(items):
+		var d = items[i]
+		if d.frame <= Engine.get_frames_drawn():
+			# _recycle_line_material(d.node.material_override)
+			d.node.queue_free()
+			items[i] = items[len(items) - 1]
+			items.pop_back()
+		else:
+			i += 1
+
+static func _process_circles_3d():
+	_process_3d_circles_delayed_free(_circles_3d)
+
+	# Progressively delete boxes in pool
+	if len(_circle_3d_pool) > 0:
+		var last = _circle_3d_pool[-1]
+		_circle_3d_pool.pop_back()
+		last.queue_free()
+
 static func _process_3d_boxes_delayed_free(items: Array):
 	var i := 0
 	while i < len(items):
@@ -294,7 +351,6 @@ static func _process_3d_boxes_delayed_free(items: Array):
 			items.pop_back()
 		else:
 			i += 1
-
 
 static func _process_boxes():
 	_process_3d_boxes_delayed_free(_boxes)
