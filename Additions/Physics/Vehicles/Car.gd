@@ -8,7 +8,9 @@ class_name Car
 ## The acceleration of the car in meters per second squared
 @export var acceleration: float = 10
 ## The deceleration of the car in meters per second squared
-@export var deceleration: float = 0.04
+@export var deceleration: float = 2
+## The maximum angle a wheel can rotate in radians
+@export var max_steer_angle: float = PI / 4
 ## How much percent acceleration the wheel should have, represented by the y-axis, in relation to
 ## the percent max velocity it currently has, represented by the x-axis
 @export var accel_curve: Curve
@@ -33,3 +35,5 @@ func _physics_process(delta: float) -> void:
 
 func get_wheel_count() -> int:
   return wheels.size() if wheels else 0
+func get_total_steer_coefficient() -> float:
+  return wheels.reduce(func(accum: float, wheel: Wheel3D): return accum + wheel.steer_coefficient, 0)

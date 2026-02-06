@@ -106,11 +106,11 @@ static func draw_cube(position: Vector3, size: float, color: Color = Color.WHITE
 ## @param radius: radius of the circle in world units
 ## @param color
 ## @param linger_frames: optionally makes the box remain drawn for longer
-static func draw_circle_3d(position: Vector3, rotation: Quaternion, radius: float, color: Color = Color.WHITE, linger_frames: int = 0):
+static func draw_circle_3d(position: Vector3, rot: Quaternion, radius: float, color: Color = Color.WHITE, linger_frames: int = 0):
 	_check_singleton_created_or_create()
 	var circle := _get_circle_3d()
 	circle.position = position
-	circle.quaternion = rotation
+	circle.quaternion = rot
 	circle.radius = radius
 	circle.color = color
 	_circles_3d.append({
