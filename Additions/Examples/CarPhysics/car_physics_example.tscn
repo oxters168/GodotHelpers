@@ -3,6 +3,7 @@
 [ext_resource type="Texture2D" uid="uid://cxws5pl63a1s4" path="res://assets/tiled.png" id="1_d5xw1"]
 [ext_resource type="PackedScene" uid="uid://bco0o2gwajku4" path="res://godot_helpers/Additions/Examples/CarPhysics/sedan_sports.tscn" id="2_800y1"]
 [ext_resource type="Script" uid="uid://dvt5sxxkp8els" path="res://godot_helpers/Additions/Cameras/OrbitCamera.gd" id="3_8qj7d"]
+[ext_resource type="PackedScene" uid="uid://dj6q2kr52mna5" path="res://godot_helpers/Additions/Examples/CarPhysics/Obstacles/five_bumps.tscn" id="4_dyyrt"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_8d6rj"]
 size = Vector3(1000, 10, 1000)
@@ -29,7 +30,7 @@ mesh = SubResource("BoxMesh_8d6rj")
 surface_material_override/0 = SubResource("StandardMaterial3D_8d6rj")
 
 [node name="SedanSports" parent="." unique_id=1248938161 instance=ExtResource("2_800y1")]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6.8140545, 0)
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 0)
 mass = 80.0
 debug = true
 
@@ -43,3 +44,17 @@ metadata/_custom_type_script = "uid://dvt5sxxkp8els"
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=147031136]
 transform = Transform3D(0.70710677, -0.61237246, 0.35355335, 0, 0.49999997, 0.86602545, -0.70710677, -0.61237246, 0.35355335, 0, 0, 0)
+
+[node name="Obstacles" type="Node3D" parent="." unique_id=1181657903]
+
+[node name="FiveBumps" parent="Obstacles" unique_id=554187818 instance=ExtResource("4_dyyrt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 4.8)
+
+[node name="FiveBumps2" parent="Obstacles" unique_id=419652400 instance=ExtResource("4_dyyrt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 6.8)
+
+[node name="FiveBumps3" parent="Obstacles" unique_id=809611553 instance=ExtResource("4_dyyrt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 8.8)
+
+[node name="FiveBumps4" parent="Obstacles" unique_id=1925820962 instance=ExtResource("4_dyyrt")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 10.8)

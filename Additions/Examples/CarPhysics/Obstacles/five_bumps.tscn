@@ -1,0 +1,19 @@
+[gd_scene format=3 uid="uid://dj6q2kr52mna5"]
+
+[ext_resource type="PackedScene" uid="uid://dcgeqw4k3ktmm" path="res://godot_helpers/Additions/Examples/CarPhysics/Obstacles/road_bump.tscn" id="1_42s6r"]
+
+[node name="FiveBumps" type="Node3D" unique_id=554187818]
+
+[node name="RoadBump" parent="." unique_id=1826679539 instance=ExtResource("1_42s6r")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.8000002)
+
+[node name="RoadBump2" parent="." unique_id=1031013000 instance=ExtResource("1_42s6r")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, -0.4)
+
+[node name="RoadBump3" parent="." unique_id=968440234 instance=ExtResource("1_42s6r")]
+
+[node name="RoadBump4" parent="." unique_id=1859000247 instance=ExtResource("1_42s6r")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.4)
+
+[node name="RoadBump5" parent="." unique_id=1744202403 instance=ExtResource("1_42s6r")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0.8)
