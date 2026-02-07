@@ -8,38 +8,84 @@ class_name ForceDrivenCharacter3D
 @export var acceleration: float = 5
 ## How quickly the character slows down to a halt in meters per second squared
 @export var deceleration: float = 5
+## The speed the jump starts with
+@export var jump_speed: float = 5
+## Needed in order re-orient the move direction based on the look direction of the camera.
+## If not set then move direction will be calculated in the global space.
+@export var camera: Node3D
+## Show debug data
+@export var debug: bool
+
+var _floor_raycast: ShapeCast3D
 
 func _init() -> void:
   if Engine.is_editor_hint():
     self.lock_rotation = true
+func _ready() -> void:
+  if not Engine.is_editor_hint():
+    var bounds: AABB = NodeHelpers.get_total_bounds_3d(self, true)
+    var mid_height: float = bounds.size.y / 2
+    var box_shape: BoxShape3D = BoxShape3D.new()
+    box_shape.size = Vector3(bounds.size.x, mid_height + 0.2, bounds.size.z)
+    _floor_raycast = ShapeCast3D.new()
+    _floor_raycast.shape = box_shape
+    _floor_raycast.position = Vector3.UP * mid_height
+    _floor_raycast.target_position = Vector3.DOWN * (mid_height / 2)
+    _floor_raycast.exclude_parent = true
+    _floor_raycast.enabled = false
+    _floor_raycast.max_results = 1
+    add_child(_floor_raycast)
 
 func _physics_process(delta: float) -> void:
   if not Engine.is_editor_hint():
     var input_vector: Vector2 = Input.get_vector("move_hor_neg", "move_hor_pos", "move_ver_neg", "move_ver_pos")
     var move_direction: Vector3 = global_basis * Vector3(-input_vector.x, 0, input_vector.y)
+    var global_up: Vector3 = NodeHelpers.get_global_up(self)
+    if camera:
+      var camera_forward: Vector3 = NodeHelpers.get_global_forward(camera)
+      camera_forward = Vector3(camera_forward.x, 0, camera_forward.z).normalized()
+      var angle_to_camera: float = camera_forward.signed_angle_to(NodeHelpers.get_global_forward(self), global_up)
+      move_direction = Vector3(-input_vector.x, 0, input_vector.y).rotated(global_up, -angle_to_camera + PI)
+    
+    _floor_raycast.force_shapecast_update()
+    var is_grounded: bool = _floor_raycast.is_colliding()
+    if debug:
+      DebugDraw.draw_box(to_global(_floor_raycast.position + _floor_raycast.target_position), _floor_raycast.shape.size, Color.GREEN if is_grounded else Color.RED)
+    var vertical_velocity: float = linear_velocity.dot(global_up)
+    if is_grounded:
+      if Input.is_action_just_released("move_lat_pos"):
+        apply_force(global_up * (jump_speed / delta) * mass)
+      # undo any downwards velocity
+      if vertical_velocity < 0:
+        apply_force(-global_up * (vertical_velocity / delta) * mass)
+      apply_force(-PhysicsHelpers.get_gravity_3d() * mass)
 
     var move_percent: float = input_vector.length()
-    DebugDraw.set_text(str(self), str("velocity: ", linear_velocity))
+    if debug:
+      DebugDraw.set_text(str(self), str("velocity: ", (linear_velocity.dot(move_direction) if move_percent > Constants.EPSILON else linear_velocity.length())))
     if move_percent > Constants.EPSILON:
-      var current_velocity: float = move_direction.dot(linear_velocity)
-      var extraneous_velocity: Vector3 = linear_velocity - (move_direction * current_velocity)
+      var current_velocity: float = linear_velocity.dot(move_direction)
+      var extraneous_velocity: Vector3 = linear_velocity - ((move_direction * current_velocity) + (global_up * vertical_velocity))
       var stop_force: Vector3 = _force_to_decel_velocity(extraneous_velocity, deceleration, mass, delta)
-      DebugDraw.draw_ray_3d(global_position + NodeHelpers.get_global_up(self), stop_force.normalized(), (stop_force.length() / (deceleration * mass)) * 2, Color.RED)
+      if debug:
+        DebugDraw.draw_ray_3d(global_position + global_up, stop_force.normalized(), (stop_force.length() / (deceleration * mass)) * 2, Color.RED)
       apply_force(stop_force)
 
-      var accel_to_max: float = (max_speed - current_velocity) / delta
+      var accel_to_max: float = ((move_percent * max_speed) - current_velocity) / delta
       var accel: float = min(abs(accel_to_max), acceleration)
-      var move_mag: float = move_percent * accel * mass
+      var move_mag: float = accel * mass
       var move_force: Vector3 = move_direction * move_mag
-      DebugDraw.draw_ray_3d(global_position + NodeHelpers.get_global_up(self), move_direction, (move_mag / (acceleration * mass)) * 2, Color.BLUE)
+      if debug:
+        DebugDraw.draw_ray_3d(global_position + global_up, move_direction, (move_mag / (acceleration * mass)) * 2, Color.BLUE)
       apply_force(move_force)
     else:
-      var stop_force: Vector3 = _force_to_decel_velocity(linear_velocity, deceleration, mass, delta)
-      DebugDraw.draw_ray_3d(global_position + NodeHelpers.get_global_up(self), stop_force.normalized(), (stop_force.length() / (deceleration * mass)) * 2, Color.RED)
+      var stop_force: Vector3 = _force_to_decel_velocity(linear_velocity - (global_up * vertical_velocity), deceleration, mass, delta)
+      if debug:
+        DebugDraw.draw_ray_3d(global_position + global_up, stop_force.normalized(), (stop_force.length() / (deceleration * mass)) * 2, Color.RED)
       apply_force(stop_force)
 
-static func _force_to_decel_velocity(velocity: Vector3, deceleration: float, mass: float, delta: float) -> Vector3:
+static func _force_to_decel_velocity(velocity: Vector3, decel_rate: float, body_mass: float, delta: float) -> Vector3:
   var decel_to_halt: float = velocity.length() / delta
-  var decel: float = min(decel_to_halt, deceleration)
-  var stop_mag: float = decel * mass
+  var decel: float = min(decel_to_halt, decel_rate)
+  var stop_mag: float = decel * body_mass
   return -velocity.normalized() * stop_mag
