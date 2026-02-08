@@ -58,7 +58,7 @@ func _physics_process(delta: float) -> void:
       # undo any downwards velocity
       if vertical_velocity < 0:
         apply_force(-global_up * (vertical_velocity / delta) * mass)
-      apply_force(-PhysicsHelpers.get_gravity_3d() * mass)
+      apply_force(-get_gravity() * mass)
 
     var move_percent: float = input_vector.length()
     if debug:
