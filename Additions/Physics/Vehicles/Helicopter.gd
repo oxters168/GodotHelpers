@@ -6,7 +6,17 @@ class_name Helicopter
 ## The max speed the helicopter can lift itself in meters per second
 @export var max_lift_speed: float = 10
 ## How quickly the helicopter reaches max lift speed in meters per second squared
-@export var acceleration: float = 5
+@export var lift_acceleration: float = 5
+
+## The max speed the helicopter can rotate in radians per second
+@export var max_rot_speed: float = PI / 4
+## How quickly the helicopter can reach max rotation speed in radians per second squared
+@export var rot_acceleration: float = PI / 6
+
+## How far the helicopter can tilt in radians
+@export var max_tilt_angle: float = PI / 6
+@export var max_tilt_speed: float = PI / 4
+@export var tilt_acceleration: float = PI / 6
 
 var _orientation_debug: Node3D
 
@@ -21,30 +31,60 @@ func _init() -> void:
 	add_child(_orientation_debug)
 
 func _physics_process(delta: float) -> void:
+	var lift_input: float = Input.get_action_strength("look_ver_pos")
+	var input_vector: Vector2 = Input.get_vector("move_hor_neg", "move_hor_pos", "move_ver_neg", "move_ver_pos")
+	var input_rot: float = Input.get_axis("move_lat_neg", "move_lat_pos")
+
 	var global_up: Vector3 = NodeHelpers.get_global_up(self)
+	var global_forward: Vector3 = NodeHelpers.get_global_forward(self)
+	var global_right: Vector3 = NodeHelpers.get_global_right(self)
+
 	var current_height: float = global_position.y
-	if Input.is_action_pressed("move_lat_pos"):
-		var accel_to_max: float = (max_lift_speed - linear_velocity.dot(global_up)) / delta
-		var accel: float = min(abs(accel_to_max), acceleration)
-		var lift_mag: float = accel * mass
+	if lift_input > 0:
+		var lift_accel_to_max: float = max((max_lift_speed - max(linear_velocity.dot(global_up), 0)) / delta, 0)
+		var lift_accel: float = min(lift_accel_to_max, lift_acceleration)
+		var lift_mag: float = lift_accel * mass
 		var lift_force: Vector3 = global_up * lift_mag
-		if current_height <= max_height:
+		if current_height <= lift_input * max_height:
 			var anti_gravity_force: Vector3 = -get_gravity() * mass
 			apply_force(anti_gravity_force)
 		else:
 			lift_force -= Vector3.UP * lift_force.dot(Vector3.UP)
 		apply_force(lift_force)
 	
-	var current_lift_speed: float = linear_velocity.dot(global_up)
-	DebugDraw.set_text(str(self), str("height: ", MathHelpers.to_decimal_places(current_height, 2), " lift_speed: ", MathHelpers.to_decimal_places(current_lift_speed, 2)))
 	# stabilize helicopter
-	var global_forward: Vector3 = NodeHelpers.get_global_forward(self)
-	var flattened_forward: Vector3 = Vector3(global_forward.x, 0, global_forward.z).normalized()
-	# var rot_offset: Vector3 = (global_basis.inverse() * Basis.looking_at(flattened_forward, Vector3.UP, true)).get_euler()
-	var rot_offset: Vector3 = (Basis.looking_at(flattened_forward, Vector3.UP, true) * global_basis.inverse()).get_euler()
-	# var target_quat: Quaternion = Basis.looking_at(flattened_forward, Vector3.UP, true)
-	# var current_quat: Quaternion = global_basis.get_rotation_quaternion()
-	# var offset_quat: Quaternion = current_quat.inverse() * target_quat
 	var rot_inertia: Vector3 = PhysicsServer3D.body_get_direct_state(self).inverse_inertia.inverse()
-	_orientation_debug.global_rotation = global_rotation + rot_offset
-	apply_torque(rot_inertia * (((rot_offset / delta) - angular_velocity)))
+
+	var flattened_forward: Vector3 = Vector3(global_forward.x, 0, global_forward.z).normalized()
+	var target_basis: Basis = Basis.looking_at(flattened_forward, Vector3.UP, true)
+	var input_tilt_percent: float = input_vector.length()
+	var input_tilt_angle: float = 0
+	if input_tilt_percent > 0:
+		var input_tilt_dir: Vector3 = global_basis * Vector3(input_vector.x, 0, -input_vector.y).normalized()
+		DebugDraw.draw_ray_3d(global_position, input_tilt_dir, 2, Color.BLUE)
+		var input_tilt_axis: Vector3 = input_tilt_dir.cross(global_up)
+		# DebugDraw.draw_ray_3d(global_position, input_tilt_axis, 2, Color.RED)
+		input_tilt_angle = global_rotation.dot(input_tilt_axis)
+		target_basis = target_basis.rotated(input_tilt_axis, -max_tilt_angle * input_tilt_percent)
+	var tilt_basis: Basis = target_basis * global_basis.inverse()
+	var tilt_offset: Vector3 = tilt_basis.get_euler()
+	var tilt_velocity: Vector3 = tilt_offset / delta
+	var tilt_axis: Vector3 = (target_basis * Vector3.FORWARD).cross(global_forward).normalized()
+	if abs(tilt_axis.dot(global_right)) > 0.2 or abs(tilt_axis.dot(global_forward)) > 0.2:
+		tilt_axis = (target_basis * Vector3.LEFT).cross(global_right).normalized()
+	# if not already in target orientation
+	if tilt_axis.length_squared() > Constants.EPSILON:
+		DebugDraw.draw_ray_3d(global_position, tilt_axis, 2, Color.RED)
+		# var tilt_accel_to_max: float = max_tilt_speed - abs(angular_velocity.dot(tilt_axis))
+		# var tilt_accel: float = 
+		_orientation_debug.global_rotation = global_rotation + tilt_offset
+		apply_torque(rot_inertia * ((tilt_velocity - angular_velocity)))
+
+	var up_rot_velocity: float = angular_velocity.dot(global_up)
+	var rot_accel_to_max: float = max((abs(input_rot * max_rot_speed) - abs(up_rot_velocity)) / delta, 0)
+	var rot_accel: float = sign(input_rot) * min(abs(rot_accel_to_max), rot_acceleration)
+	var rot_torque: Vector3 = global_up * -rot_accel
+	apply_torque(rot_inertia * rot_torque) # not fully reaching max rotation speed, I think due to the stabilizing torque applied later
+
+	var current_lift_speed: float = linear_velocity.dot(global_up)
+	DebugDraw.set_text(str(self), str("height: ", MathHelpers.to_decimal_places(current_height, 2), " lift_speed: ", MathHelpers.print_format(current_lift_speed), " rot_speed: ", MathHelpers.print_format(up_rot_velocity), " rot_input: ", MathHelpers.print_format(input_rot), " input_tilt_angle: ", input_tilt_angle))
