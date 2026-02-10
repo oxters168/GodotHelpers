@@ -1,0 +1,38 @@
+[gd_scene format=3 uid="uid://bpcyik8syld8o"]
+
+[ext_resource type="Script" uid="uid://di2o7iuxrctdy" path="res://godot_helpers/Additions/Physics/Vehicles/Helicopter.gd" id="1_dyel1"]
+[ext_resource type="PackedScene" uid="uid://vv8qu0yr5ccg" path="res://godot_helpers/Additions/Examples/Assets/asset_forge_deluxe/helicopter/helicopter_body.glb" id="2_f3f4t"]
+[ext_resource type="PackedScene" uid="uid://b3a0g1xvxbq1d" path="res://godot_helpers/Additions/Examples/Assets/asset_forge_deluxe/helicopter/helicopter_blades.glb" id="3_uhhpq"]
+[ext_resource type="PackedScene" uid="uid://dme27y5fhun6t" path="res://godot_helpers/Additions/Examples/Assets/asset_forge_deluxe/helicopter/helicopter_tail.glb" id="4_j86ug"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_43h4p"]
+points = PackedVector3Array(0.18901631, 1.5990713, 3.4166842, -0.84819996, -1.4681526, -3.1889052, 0.9213524, -1.4518571, -3.7828941, 0.31104246, -0.23092668, 3.9052188, 0.79914707, 0.6225754, -3.0504744, -0.7870137, 0.6225754, -3.0504744, -0.2989091, -0.23092668, 3.9052188, 0.9213524, -1.573919, -1.5863996, -0.909219, -1.573919, -1.5863996, -0.2989091, 1.2328854, 3.9052188, -0.3927292, 0.24028416, -3.6472557, 0.31104246, 0.98876137, 3.9052188, 0.79914707, 0.6225754, -1.5863996, -0.909219, -1.3297951, -3.9052188, -0.7870137, 0.6225754, -1.5863996, -0.17688295, 1.5990713, 3.4166842, 0.9213524, -1.2077332, -3.9052188, 0.40494826, 0.2403331, -3.6480393, 0.18901631, 1.5990713, 3.9052188, -0.909219, -1.3297951, -1.5863996, 0.9213524, -1.3297951, -1.5863996, -0.909219, -1.2077332, -3.9052188, -0.3952768, 0.3564661, -3.555581, 0.79914707, 0.37845147, -1.34175, -0.7870137, 0.37845147, -1.34175, 0.40741017, 0.3564661, -3.555581, 0.9213524, -1.3297951, -3.9052188, 0.52272636, 0.24201527, -3.5598702, -0.5103931, 0.2419265, -3.5584931, 0.9213524, -1.2077332, -3.539009, -0.909219, -1.2077332, -3.539009)
+
+[sub_resource type="SphereMesh" id="SphereMesh_3tgat"]
+radius = 0.1
+height = 0.2
+
+[node name="Helicopter" type="RigidBody3D" unique_id=2035592377 node_paths=PackedStringArray("top_blades", "tail_blades")]
+mass = 80.0
+center_of_mass_mode = 1
+center_of_mass = Vector3(0, 0.61235094, 0)
+script = ExtResource("1_dyel1")
+top_blades = NodePath("helicopter_blades")
+tail_blades = NodePath("helicopter_tail")
+metadata/_custom_type_script = "uid://di2o7iuxrctdy"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1763678655]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.52, 2.3596954)
+shape = SubResource("ConvexPolygonShape3D_43h4p")
+
+[node name="helicopter_body" parent="CollisionShape3D" unique_id=1679655333 instance=ExtResource("2_f3f4t")]
+
+[node name="helicopter_blades" parent="." unique_id=387297209 instance=ExtResource("3_uhhpq")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.3, 0.099695444)
+
+[node name="helicopter_tail" parent="." unique_id=1124689999 instance=ExtResource("4_j86ug")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.24, 1.74, 5.4796953)
+
+[node name="com" type="MeshInstance3D" parent="." unique_id=83378729]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.61235094, 0)
+mesh = SubResource("SphereMesh_3tgat")

@@ -1,0 +1,57 @@
+[gd_scene format=3 uid="uid://c7u7ebcswhkfp"]
+
+[ext_resource type="Texture2D" uid="uid://cxws5pl63a1s4" path="res://assets/tiled.png" id="1_uf7j5"]
+[ext_resource type="PackedScene" uid="uid://bpcyik8syld8o" path="res://godot_helpers/Additions/Examples/Helicopter/helicopter.tscn" id="2_324c8"]
+[ext_resource type="Script" uid="uid://dvt5sxxkp8els" path="res://godot_helpers/Additions/Cameras/OrbitCamera.gd" id="3_mdepl"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_frl7u"]
+size = Vector3(1000, 10, 1000)
+
+[sub_resource type="BoxMesh" id="BoxMesh_b1igm"]
+size = Vector3(1000, 10, 1000)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_l6kwb"]
+albedo_texture = ExtResource("1_uf7j5")
+metallic_specular = 0.0
+uv1_scale = Vector3(750, 500, 500)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_b1igm"]
+size = Vector3(6, 1, 6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_l6kwb"]
+size = Vector3(6, 1, 6)
+
+[node name="HelicopterPhysicsExample" type="Node3D" unique_id=661989493]
+
+[node name="Ground" type="StaticBody3D" parent="." unique_id=147760225]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground" unique_id=1305334072]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0)
+shape = SubResource("BoxShape3D_frl7u")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground" unique_id=774893581]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0)
+mesh = SubResource("BoxMesh_b1igm")
+surface_material_override/0 = SubResource("StandardMaterial3D_l6kwb")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=413901065]
+transform = Transform3D(0.7071068, -0.61237246, 0.35355338, 0, 0.49999997, 0.86602545, -0.7071068, -0.61237246, 0.35355338, 0, 0, 0)
+
+[node name="Helicopter" parent="." unique_id=2035592377 instance=ExtResource("2_324c8")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.5, 0)
+
+[node name="OrbitCamera" type="Camera3D" parent="." unique_id=1137633932 node_paths=PackedStringArray("target")]
+script = ExtResource("3_mdepl")
+mouse_input = true
+target = NodePath("../Helicopter")
+limit_angle = false
+look_input_enabled = false
+metadata/_custom_type_script = "uid://dvt5sxxkp8els"
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=1197840784]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1556738578]
+shape = SubResource("BoxShape3D_b1igm")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D/CollisionShape3D" unique_id=1088000881]
+mesh = SubResource("BoxMesh_l6kwb")

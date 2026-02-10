@@ -23,7 +23,7 @@ class_name Helicopter
 @export var tilt_damp: float = 3
 
 ## How many milliseconds it takes for the helicopter blades to be fully spinning and ready to lift
-@export var time_to_power: int = 5000
+@export var time_to_power: int = 3000
 ## The node to be spun for the top blades as the helicopter lift is applied
 @export var top_blades: Node3D
 ## The node to be spun for the tail blades as the helicopter rotates
@@ -72,7 +72,6 @@ func _physics_process(delta: float) -> void:
 	# if fully powered up or falling
 	if _power >= 1 or is_moving_vertically:
 		var global_forward: Vector3 = NodeHelpers.get_global_forward(self)
-		# var global_right: Vector3 = NodeHelpers.get_global_right(self)
 
 		if lift_input > 0:
 			var lift_accel_to_max: float = max((max_lift_speed - max(linear_velocity.dot(global_up), 0)) / delta, 0)
@@ -92,18 +91,12 @@ func _physics_process(delta: float) -> void:
 		var flattened_forward: Vector3 = Vector3(global_forward.x, 0, global_forward.z).normalized()
 		var target_basis: Basis = Basis.looking_at(flattened_forward, Vector3.UP, true)
 		var input_tilt_percent: float = input_vector.length()
-		# var input_tilt_angle: float = 0
 		if input_tilt_percent > 0:
 			var input_tilt_dir: Vector3 = global_basis * Vector3(input_vector.x, 0, -input_vector.y).normalized()
 			if debug:
 				DebugDraw.draw_ray_3d(global_position, input_tilt_dir, 2, Color.BLUE)
 			var input_tilt_axis: Vector3 = input_tilt_dir.cross(global_up)
-			# DebugDraw.draw_ray_3d(global_position, input_tilt_axis, 2, Color.RED)
-			# input_tilt_angle = global_rotation.dot(input_tilt_axis)
 			target_basis = target_basis.rotated(input_tilt_axis, -max_tilt_angle * input_tilt_percent)
-		# var target_forward: Vector3 = target_basis * Vector3.FORWARD
-		# var tilt_axis: Vector3 = global_forward.cross(target_forward).normalized()
-		# var tilt_angle_offset: float = -global_forward.signed_angle_to(target_forward, tilt_axis)
 		var tilt_diff_basis: Basis = target_basis * global_basis.inverse()
 		var tilt_quat: Quaternion = tilt_diff_basis.get_rotation_quaternion()
 		var flip_axis: bool = tilt_quat.w < 0 # for a consistent axis
@@ -114,14 +107,9 @@ func _physics_process(delta: float) -> void:
 				DebugDraw.draw_ray_3d(global_position, tilt_axis, 2, Color.RED)
 			var angular_velocity_in_tilt: float = angular_velocity.dot(tilt_axis)
 			var tilt_accel: float = (tilt_angle_offset * tilt_strength) - (angular_velocity_in_tilt * tilt_damp)
-			# var tilt_torque: Vector3 = global_basis * (rot_inertia * (global_basis.inverse() * (tilt_axis * tilt_accel)))
 			var tilt_torque: Vector3 = _power * rot_inertia.length() * (tilt_axis * tilt_accel)
 			tilt_torque -= global_up * tilt_torque.dot(global_up)
-			# var tilt_torque: Vector3 = rot_inertia * (tilt_axis * tilt_accel)
-			# var tilt_torque: Vector3 = tilt_axis * tilt_accel
 			_orientation_debug.global_basis = target_basis
-			# _orientation_debug.global_rotation = global_rotation + tilt_offset
-			# DebugDraw.set_text(str(self), str("tilt_angle_offset: ", MathHelpers.print_format(tilt_angle_offset), " tilt_accel: ", MathHelpers.print_format(tilt_accel), " tilt_torque: ", MathHelpers.print_format(tilt_torque), " inertia: ", rot_inertia))
 			apply_torque(tilt_torque)
 
 		if abs(input_rot) > Constants.EPSILON:
