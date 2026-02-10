@@ -15,6 +15,8 @@ class_name Helicopter
 
 ## How far the helicopter can tilt in radians
 @export var max_tilt_angle: float = PI / 6
+@export var tilt_strength: float = 20
+@export var tilt_damp: float = 5
 @export var max_tilt_speed: float = PI / 4
 @export var tilt_acceleration: float = PI / 6
 
@@ -58,13 +60,13 @@ func _physics_process(delta: float) -> void:
 	var flattened_forward: Vector3 = Vector3(global_forward.x, 0, global_forward.z).normalized()
 	var target_basis: Basis = Basis.looking_at(flattened_forward, Vector3.UP, true)
 	var input_tilt_percent: float = input_vector.length()
-	var input_tilt_angle: float = 0
+	# var input_tilt_angle: float = 0
 	if input_tilt_percent > 0:
 		var input_tilt_dir: Vector3 = global_basis * Vector3(input_vector.x, 0, -input_vector.y).normalized()
 		DebugDraw.draw_ray_3d(global_position, input_tilt_dir, 2, Color.BLUE)
 		var input_tilt_axis: Vector3 = input_tilt_dir.cross(global_up)
 		# DebugDraw.draw_ray_3d(global_position, input_tilt_axis, 2, Color.RED)
-		input_tilt_angle = global_rotation.dot(input_tilt_axis)
+		# input_tilt_angle = global_rotation.dot(input_tilt_axis)
 		target_basis = target_basis.rotated(input_tilt_axis, -max_tilt_angle * input_tilt_percent)
 	var tilt_basis: Basis = target_basis * global_basis.inverse()
 	# var tilt_basis: Basis = global_basis.inverse() * target_basis
@@ -78,14 +80,12 @@ func _physics_process(delta: float) -> void:
 	var tilt_torque: Vector3 = Vector3.ZERO
 	if abs(tilt_angle_offset) > Constants.EPSILON:
 		DebugDraw.draw_ray_3d(global_position, tilt_axis, 2, Color.RED)
-		var tilt_accel_to_angle: float = (tilt_angle_offset / delta) - angular_velocity.dot(tilt_axis)
-		# var tilt_accel_to_max: float = max_tilt_speed - abs(angular_velocity.dot(tilt_axis))
-		tilt_accel = sign(tilt_accel_to_angle) * min(abs(tilt_accel_to_angle), tilt_acceleration)
-		tilt_torque = global_basis * (rot_inertia * (global_basis.inverse() * (tilt_axis * tilt_accel)))
-		tilt_torque = rot_inertia * tilt_axis * tilt_accel_to_angle
+		var angular_velocity_in_tilt: float = angular_velocity.dot(tilt_axis)
+		var tilt_accel_to_angle: float = (tilt_angle_offset * tilt_strength) - (angular_velocity_in_tilt * tilt_damp)
+		# tilt_torque = global_basis * (rot_inertia * (global_basis.inverse() * (tilt_axis * tilt_accel_to_angle)))
+		tilt_torque = tilt_axis * tilt_accel_to_angle
 		_orientation_debug.global_basis = target_basis
 		# _orientation_debug.global_rotation = global_rotation + tilt_offset
-		# apply_torque(rot_inertia * ((tilt_velocity - angular_velocity)))
 		DebugDraw.set_text(str(self), str("tilt_angle_offset: ", MathHelpers.print_format(tilt_angle_offset), " tilt_accel: ", MathHelpers.print_format(tilt_accel), " tilt_torque: ", MathHelpers.print_format(tilt_torque), " inertia: ", rot_inertia))
 		apply_torque(tilt_torque)
 

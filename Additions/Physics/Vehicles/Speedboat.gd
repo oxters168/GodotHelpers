@@ -40,7 +40,7 @@ func _physics_process(delta: float) -> void:
 	var projected_angular_velocity: float = current_angular_velocity + input_angular_accel * delta
 	if abs(projected_angular_velocity) > max_turn_speed:
 		input_angular_accel = sign(input_angular_accel) * ((max_turn_speed - abs(current_angular_velocity)) + angular_cancel_damp)
-	var torque: Vector3 = global_up * physics_server_inertia.y * input_angular_accel
+	var torque: Vector3 = global_basis * (physics_server_inertia.y * (global_basis.inverse() * (global_up * input_angular_accel)))
 	apply_torque(torque)
 
 	if debug:
