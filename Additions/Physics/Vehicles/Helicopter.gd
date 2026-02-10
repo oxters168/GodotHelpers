@@ -17,8 +17,6 @@ class_name Helicopter
 @export var max_tilt_angle: float = PI / 6
 @export var tilt_strength: float = 20
 @export var tilt_damp: float = 5
-@export var max_tilt_speed: float = PI / 4
-@export var tilt_acceleration: float = PI / 6
 
 var _orientation_debug: Node3D
 
@@ -76,14 +74,14 @@ func _physics_process(delta: float) -> void:
 	var flip_axis: bool = tilt_quat.w < 0 # for a consistent axis
 	var tilt_axis: Vector3 = tilt_quat.get_axis() * (-1 if flip_axis else 1)
 	var tilt_angle_offset: float = tilt_quat.get_angle() * (-1 if flip_axis else 1)
-	var tilt_accel: float = 0
-	var tilt_torque: Vector3 = Vector3.ZERO
 	if abs(tilt_angle_offset) > Constants.EPSILON:
 		DebugDraw.draw_ray_3d(global_position, tilt_axis, 2, Color.RED)
 		var angular_velocity_in_tilt: float = angular_velocity.dot(tilt_axis)
-		var tilt_accel_to_angle: float = (tilt_angle_offset * tilt_strength) - (angular_velocity_in_tilt * tilt_damp)
-		# tilt_torque = global_basis * (rot_inertia * (global_basis.inverse() * (tilt_axis * tilt_accel_to_angle)))
-		tilt_torque = tilt_axis * tilt_accel_to_angle
+		var tilt_accel: float = (tilt_angle_offset * tilt_strength) - (angular_velocity_in_tilt * tilt_damp)
+		# var tilt_torque: Vector3 = global_basis * (rot_inertia * (global_basis.inverse() * (tilt_axis * tilt_accel)))
+		var tilt_torque: Vector3 = rot_inertia.length() * (tilt_axis * tilt_accel)
+		# var tilt_torque: Vector3 = rot_inertia * (tilt_axis * tilt_accel)
+		# var tilt_torque: Vector3 = tilt_axis * tilt_accel
 		_orientation_debug.global_basis = target_basis
 		# _orientation_debug.global_rotation = global_rotation + tilt_offset
 		DebugDraw.set_text(str(self), str("tilt_angle_offset: ", MathHelpers.print_format(tilt_angle_offset), " tilt_accel: ", MathHelpers.print_format(tilt_accel), " tilt_torque: ", MathHelpers.print_format(tilt_torque), " inertia: ", rot_inertia))
