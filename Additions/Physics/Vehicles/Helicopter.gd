@@ -67,24 +67,33 @@ func _physics_process(delta: float) -> void:
 		input_tilt_angle = global_rotation.dot(input_tilt_axis)
 		target_basis = target_basis.rotated(input_tilt_axis, -max_tilt_angle * input_tilt_percent)
 	var tilt_basis: Basis = target_basis * global_basis.inverse()
-	var tilt_offset: Vector3 = tilt_basis.get_euler()
-	var tilt_velocity: Vector3 = tilt_offset / delta
-	var tilt_axis: Vector3 = (target_basis * Vector3.FORWARD).cross(global_forward).normalized()
-	if abs(tilt_axis.dot(global_right)) > 0.2 or abs(tilt_axis.dot(global_forward)) > 0.2:
-		tilt_axis = (target_basis * Vector3.LEFT).cross(global_right).normalized()
-	# if not already in target orientation
-	if tilt_axis.length_squared() > Constants.EPSILON:
+	# var tilt_basis: Basis = global_basis.inverse() * target_basis
+	# var tilt_offset: Vector3 = tilt_basis.get_euler()
+	# var tilt_velocity: Vector3 = tilt_offset / delta
+	var tilt_quat: Quaternion = Quaternion(tilt_basis)
+	var flip_axis: bool = tilt_quat.w < 0 # for a consistent axis
+	var tilt_axis: Vector3 = tilt_quat.get_axis() * (-1 if flip_axis else 1)
+	var tilt_angle_offset: float = tilt_quat.get_angle() * (-1 if flip_axis else 1)
+	var tilt_accel: float = 0
+	var tilt_torque: Vector3 = Vector3.ZERO
+	if abs(tilt_angle_offset) > Constants.EPSILON:
 		DebugDraw.draw_ray_3d(global_position, tilt_axis, 2, Color.RED)
+		var tilt_accel_to_angle: float = (tilt_angle_offset / delta) - angular_velocity.dot(tilt_axis)
 		# var tilt_accel_to_max: float = max_tilt_speed - abs(angular_velocity.dot(tilt_axis))
-		# var tilt_accel: float = 
-		_orientation_debug.global_rotation = global_rotation + tilt_offset
-		apply_torque(rot_inertia * ((tilt_velocity - angular_velocity)))
+		tilt_accel = sign(tilt_accel_to_angle) * min(abs(tilt_accel_to_angle), tilt_acceleration)
+		tilt_torque = global_basis * (rot_inertia * (global_basis.inverse() * (tilt_axis * tilt_accel)))
+		tilt_torque = rot_inertia * tilt_axis * tilt_accel_to_angle
+		_orientation_debug.global_basis = target_basis
+		# _orientation_debug.global_rotation = global_rotation + tilt_offset
+		# apply_torque(rot_inertia * ((tilt_velocity - angular_velocity)))
+		DebugDraw.set_text(str(self), str("tilt_angle_offset: ", MathHelpers.print_format(tilt_angle_offset), " tilt_accel: ", MathHelpers.print_format(tilt_accel), " tilt_torque: ", MathHelpers.print_format(tilt_torque), " inertia: ", rot_inertia))
+		apply_torque(tilt_torque)
 
 	var up_rot_velocity: float = angular_velocity.dot(global_up)
 	var rot_accel_to_max: float = max((abs(input_rot * max_rot_speed) - abs(up_rot_velocity)) / delta, 0)
 	var rot_accel: float = sign(input_rot) * min(abs(rot_accel_to_max), rot_acceleration)
-	var rot_torque: Vector3 = global_up * -rot_accel
-	apply_torque(rot_inertia * rot_torque) # not fully reaching max rotation speed, I think due to the stabilizing torque applied later
+	var rot_torque: Vector3 = global_basis * (rot_inertia * (global_basis.inverse() * (global_up * -rot_accel)))
+	apply_torque(rot_torque) # not fully reaching max rotation speed, I think due to the stabilizing torque applied later
 
 	var current_lift_speed: float = linear_velocity.dot(global_up)
-	DebugDraw.set_text(str(self), str("height: ", MathHelpers.to_decimal_places(current_height, 2), " lift_speed: ", MathHelpers.print_format(current_lift_speed), " rot_speed: ", MathHelpers.print_format(up_rot_velocity), " rot_input: ", MathHelpers.print_format(input_rot), " input_tilt_angle: ", input_tilt_angle))
+	# DebugDraw.set_text(str(self), str("height: ", MathHelpers.to_decimal_places(current_height, 2), " lift_speed: ", MathHelpers.print_format(current_lift_speed), " rot_speed: ", MathHelpers.print_format(up_rot_velocity), " tilt_angle_offset: ", MathHelpers.print_format(tilt_angle_offset), " tilt_accel: ", MathHelpers.print_format(tilt_accel)))
