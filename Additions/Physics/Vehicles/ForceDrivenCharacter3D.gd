@@ -16,13 +16,22 @@ class_name ForceDrivenCharacter3D
 ## Show debug data
 @export var debug: bool
 
+## A [Vector2] that is normalized and represents how much to move along each axis
+var input_vector: Vector2 = Vector2.ZERO:
+  set(value):
+    input_vector = value.normalized()
+## A [bool] representing the pressed state of the button that makes the character jump
+var jump_btn: bool
+
 var _floor_raycast: ShapeCast3D
+var _prev_jump_btn: bool
 
 func _init() -> void:
   if Engine.is_editor_hint():
     self.lock_rotation = true
 func _ready() -> void:
   if not Engine.is_editor_hint():
+    add_child(Vehicle.new(self))
     var bounds: AABB = NodeHelpers.get_total_bounds_3d(self, true)
     var mid_height: float = bounds.size.y / 2
     var box_shape: BoxShape3D = BoxShape3D.new()
@@ -38,7 +47,7 @@ func _ready() -> void:
 
 func _physics_process(delta: float) -> void:
   if not Engine.is_editor_hint():
-    var input_vector: Vector2 = Input.get_vector("move_hor_neg", "move_hor_pos", "move_ver_neg", "move_ver_pos")
+    # var input_vector: Vector2 = Input.get_vector("move_hor_neg", "move_hor_pos", "move_ver_neg", "move_ver_pos")
     var move_direction: Vector3 = global_basis * Vector3(-input_vector.x, 0, input_vector.y)
     var global_up: Vector3 = NodeHelpers.get_global_up(self)
     if camera:
@@ -53,7 +62,8 @@ func _physics_process(delta: float) -> void:
       DebugDraw.draw_box(to_global(_floor_raycast.position + _floor_raycast.target_position), _floor_raycast.shape.size, Color.GREEN if is_grounded else Color.RED)
     var vertical_velocity: float = linear_velocity.dot(global_up)
     if is_grounded:
-      if Input.is_action_just_released("move_lat_pos"):
+      # if jump button just released
+      if not jump_btn and _prev_jump_btn:
         apply_force(global_up * (jump_speed / delta) * mass)
       # undo any downwards velocity
       if vertical_velocity < 0:
@@ -83,6 +93,8 @@ func _physics_process(delta: float) -> void:
       if debug:
         DebugDraw.draw_ray_3d(global_position + global_up, stop_force.normalized(), (stop_force.length() / (deceleration * mass)) * 2, Color.RED)
       apply_force(stop_force)
+  
+  _prev_jump_btn = jump_btn
 
 static func _force_to_decel_velocity(velocity: Vector3, decel_rate: float, body_mass: float, delta: float) -> Vector3:
   var decel_to_halt: float = velocity.length() / delta

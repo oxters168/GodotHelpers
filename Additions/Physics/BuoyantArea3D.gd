@@ -84,13 +84,15 @@ func _process_buoyancy():
               # print_debug(rho, " * ", gravity.y, " * ", abs(get_water_displacement_at(triangle.center)), " * ", triangle.area, " * ", triangle.normal)
               var triangle_normal = floater_collision_shape.global_basis * local_triangle.normal
               var submerged_displacement: Vector3 = get_submerged_displacement(triangle_center)
-              var floater_body: RigidBody3D = NodeHelpers.get_parent_of_type(floater_collision_shape, RigidBody3D)
-              var gravity_strength: float = floater_body.get_gravity().dot(submerged_displacement.normalized())
-              var constant_force_strength: float = floater_body.constant_force.dot(submerged_displacement.normalized())
-              var force: Vector3 = rho * min(gravity_strength + constant_force_strength, -1) * submerged_displacement * local_triangle.area * triangle_normal
-              if debug:
-                DebugDraw.draw_line_3d(triangle_center, triangle_center + (force / 100), Color.BLUE)
-              floating_obj.apply_force(force, triangle_center - floating_obj.global_position)
+              var raw_body: CollisionObject3D = NodeHelpers.get_parent_of_type(floater_collision_shape, CollisionObject3D)
+              if raw_body is RigidBody3D:
+                var floater_body: RigidBody3D = raw_body as RigidBody3D
+                var gravity_strength: float = floater_body.get_gravity().dot(submerged_displacement.normalized())
+                var constant_force_strength: float = floater_body.constant_force.dot(submerged_displacement.normalized())
+                var force: Vector3 = rho * min(gravity_strength + constant_force_strength, -1) * submerged_displacement * local_triangle.area * triangle_normal
+                if debug:
+                  DebugDraw.draw_line_3d(triangle_center, triangle_center + (force / 100), Color.BLUE)
+                floating_obj.apply_force(force, triangle_center - floating_obj.global_position)
 
 func _on_body_entered(body: Node3D):
   var has_buoyancy: bool = NodeHelpers.get_child_of_type(body, Buoyancy) != null

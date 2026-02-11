@@ -86,7 +86,7 @@ func _renew_tiles() -> void:
 
 func _update_tiles(instant_jump: bool) -> void:
 	var edge_count: int = tile_distance * 2 + 1
-	var local_target_pos: Vector3 = to_local(target.global_position)
+	var local_target_pos: Vector3 = (to_local(target.global_position) if target != null else position)
 	var indexed_pos: Vector2i = _calculate_indexed_pos(local_target_pos, tile_size)
 	var target_pos_offset: Vector3 = Vector3(indexed_pos.x * tile_size.x + tile_size.x / 2, 0, indexed_pos.y * tile_size.y + tile_size.y / 2)
 	var good_indices: Dictionary[int, WaterTile] = {}

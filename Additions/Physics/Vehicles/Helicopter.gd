@@ -32,6 +32,19 @@ class_name Helicopter
 ## Show debug info
 @export var debug: bool
 
+## A [float] value clamped between 0 and 1 that represents how much force to be applied to lift the helicopter
+var input_lift: float = 0:
+	set(value):
+		input_lift = clampf(value, 0, 1)
+## A [Vector2] that is normalized and represents how much to rotate along the pitch and roll axes
+var input_tilt_vector: Vector2 = Vector2.ZERO:
+	set(value):
+		input_tilt_vector = value.normalized()
+## A [float] value clamped between -1 and 1 that represents how much to rotate along the yaw axis
+var input_rot: float = 0:
+	set(value):
+		input_rot = clampf(value, -1, 1)
+
 var _power: float = 0
 var _orientation_debug: Node3D
 
@@ -44,18 +57,20 @@ func _init() -> void:
 	_orientation_debug = Node3D.new()
 	_orientation_debug.add_child(prism)
 	add_child(_orientation_debug)
+func _ready() -> void:
+	add_child(Vehicle.new(self))
 
 func _physics_process(delta: float) -> void:
-	var lift_input: float = Input.get_action_strength("look_ver_pos")
-	var input_vector: Vector2 = Input.get_vector("move_hor_neg", "move_hor_pos", "move_ver_neg", "move_ver_pos")
-	var input_rot: float = Input.get_axis("move_lat_neg", "move_lat_pos")
+	# var input_lift: float = Input.get_action_strength("look_ver_pos")
+	# var input_tilt_vector: Vector2 = Input.get_vector("move_hor_neg", "move_hor_pos", "move_ver_neg", "move_ver_pos")
+	# var input_rot: float = Input.get_axis("move_lat_neg", "move_lat_pos")
 
 	var global_up: Vector3 = NodeHelpers.get_global_up(self)
 	var current_lift_speed: float = linear_velocity.dot(global_up)
 	var is_moving_vertically: bool = abs(linear_velocity.y) > 0.1
 	
 	var power_offset: float = (delta * 1000) / time_to_power
-	if lift_input > Constants.EPSILON:
+	if input_lift > Constants.EPSILON:
 		_power += power_offset
 	elif not is_moving_vertically:
 		_power -= power_offset
@@ -63,7 +78,7 @@ func _physics_process(delta: float) -> void:
 	if top_blades:
 		top_blades.rotate(Vector3.UP, _power * -(PI / 6))
 	if tail_blades:
-		tail_blades.rotate(Vector3.RIGHT, _power * -(PI / 6))
+		tail_blades.rotate(Vector3.RIGHT, _power * (PI / 6))
 
 	var current_height: float = global_position.y
 	var tilt_angle_offset: float = 0
@@ -73,12 +88,12 @@ func _physics_process(delta: float) -> void:
 	if _power >= 1 or is_moving_vertically:
 		var global_forward: Vector3 = NodeHelpers.get_global_forward(self)
 
-		if lift_input > 0:
+		if input_lift > 0:
 			var lift_accel_to_max: float = max((max_lift_speed - max(linear_velocity.dot(global_up), 0)) / delta, 0)
 			var lift_accel: float = min(lift_accel_to_max, lift_acceleration)
 			var lift_mag: float = lift_accel * mass
 			var lift_force: Vector3 = _power * global_up * lift_mag
-			if current_height <= lift_input * max_height:
+			if current_height <= input_lift * max_height:
 				var anti_gravity_force: Vector3 = _power * -get_gravity() * mass
 				apply_force(anti_gravity_force)
 			else:
@@ -90,9 +105,9 @@ func _physics_process(delta: float) -> void:
 
 		var flattened_forward: Vector3 = Vector3(global_forward.x, 0, global_forward.z).normalized()
 		var target_basis: Basis = Basis.looking_at(flattened_forward, Vector3.UP, true)
-		var input_tilt_percent: float = input_vector.length()
+		var input_tilt_percent: float = input_tilt_vector.length()
 		if input_tilt_percent > 0:
-			var input_tilt_dir: Vector3 = global_basis * Vector3(input_vector.x, 0, -input_vector.y).normalized()
+			var input_tilt_dir: Vector3 = global_basis * Vector3(-input_tilt_vector.x, 0, input_tilt_vector.y).normalized()
 			if debug:
 				DebugDraw.draw_ray_3d(global_position, input_tilt_dir, 2, Color.BLUE)
 			var input_tilt_axis: Vector3 = input_tilt_dir.cross(global_up)

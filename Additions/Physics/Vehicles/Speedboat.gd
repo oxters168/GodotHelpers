@@ -14,8 +14,17 @@ class_name SpeedBoat
 ## Show debug data
 @export var debug: bool = false
 
+## A [Vector2] that is not normalized but the values are clamped between -1 and 1 where the x value
+## represents the steer input and the y value represents the gas input
+var input_vector: Vector2 = Vector2.ZERO:
+	set(value):
+		input_vector = Vector2(clampf(value.x, -1, 1), clampf(value.y, -1, 1))
+
+func _ready() -> void:
+	add_child(Vehicle.new(self))
+
 func _physics_process(delta: float) -> void:
-	var input_vector: Vector2 = Vector2(Input.get_axis("move_hor_neg", "move_hor_pos"), Input.get_axis("move_ver_neg", "move_ver_pos"))
+	# var input_vector: Vector2 = Vector2(Input.get_axis("move_hor_neg", "move_hor_pos"), Input.get_axis("move_ver_neg", "move_ver_pos"))
 	var direct_state: PhysicsDirectBodyState3D = PhysicsServer3D.body_get_direct_state(get_rid())
 	
 	var global_forward: Vector3 = NodeHelpers.get_global_forward(self)
