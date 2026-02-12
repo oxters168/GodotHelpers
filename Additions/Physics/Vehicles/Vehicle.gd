@@ -90,19 +90,19 @@ func set_input_axis(input_axis: InputAxis, value: float) -> void:
 
 func set_input_button(input_btn: InputButton, value: bool) -> void:
   if input_btn == InputButton.OCCUPY_BTN and value:
-    var bounds: AABB = NodeHelpers.get_total_bounds_3d(_vehicle, true, true)
-    # DebugDraw.draw_box(_vehicle.to_global(bounds.position + bounds.size / 2), bounds.size, Color.BLUE)
-    DebugDraw.draw_box_aabb(bounds, Color.BLUE)
+    var bounds: AABB = BoundsHelpers.get_total_bounds_3d(_vehicle, true, false)
+    DebugDraw.draw_box(bounds.position + bounds.size / 2, bounds.size, Color.BLUE)
+    # DebugDraw.draw_box_aabb(bounds, Color.BLUE)
   if _vehicle is ForceDrivenCharacter3D:
     var character: ForceDrivenCharacter3D = _vehicle as ForceDrivenCharacter3D
     match input_btn:
       InputButton.JUMP_BTN:
         character.jump_btn = value
-      InputButton.OCCUPY_BTN:
-        if value:
-          var bounds: AABB = NodeHelpers.get_total_bounds_3d(_vehicle, true, true)
-          # DebugDraw.draw_box(_vehicle.to_global(bounds.position + bounds.size / 2), bounds.size, Color.BLUE)
-          DebugDraw.draw_box_aabb(bounds, Color.BLUE)
+      # InputButton.OCCUPY_BTN:
+      #   if value:
+      #     var bounds: AABB = NodeHelpers.get_total_bounds_3d(_vehicle, true, true)
+      #     # DebugDraw.draw_box(_vehicle.to_global(bounds.position + bounds.size / 2), bounds.size, Color.BLUE)
+      #     DebugDraw.draw_box_aabb(bounds, Color.BLUE)
       _: _warn_btn(input_btn)
   else:
     if not _no_vehicle_btn_warned:

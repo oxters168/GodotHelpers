@@ -36,7 +36,7 @@ func _init() -> void:
 func _ready() -> void:
   if not Engine.is_editor_hint():
     add_child(Vehicle.new(self))
-    var bounds: AABB = NodeHelpers.get_total_bounds_3d(self, true)
+    var bounds: AABB = BoundsHelpers.get_total_bounds_3d(self, true)
     var mid_height: float = bounds.size.y / 2
     var box_shape: BoxShape3D = BoxShape3D.new()
     box_shape.size = Vector3(bounds.size.x, mid_height + 0.2, bounds.size.z)

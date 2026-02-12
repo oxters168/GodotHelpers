@@ -179,7 +179,7 @@ func is_underwater():
 func recalculate_triangle_data():
 	if debug:
 		print_debug("Recalculating triangle data of ", _floater)
-	_bounds = NodeHelpers.get_total_bounds_3d(_floater, true)
+	_bounds = BoundsHelpers.get_total_bounds_3d(_floater, true)
 	_all_collider_data.clear()
 	var collision_shapes = NodeHelpers.get_children_of_type(_floater, CollisionShape3D)
 	for collider in collision_shapes:
