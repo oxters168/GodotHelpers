@@ -15,8 +15,12 @@ class_name Car
 @export var steer_speed: float = PI / 2
 ## How much percent acceleration the wheel should have, represented by the y-axis, in relation to
 ## the percent max velocity it currently has, represented by the x-axis
-@export var accel_curve: Curve
+@export var accel_curve: Curve = preload("res://godot_helpers/Additions/Examples/CarPhysics/default_accel_curve.tres")
 
+## Info on occupying and being occupied
+@export var occupant_info: IOccupy = preload("res://godot_helpers/Additions/Physics/Vehicles/Extras/non_occupier_with_4_seats.tres")
+
+## Whether to show debug info
 @export var debug: bool = false
 
 ## A [Vector2] that is not normalized but the values are clamped between -1 and 1 where the x value

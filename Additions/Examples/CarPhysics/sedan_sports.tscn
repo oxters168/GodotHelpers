@@ -3,9 +3,7 @@
 [ext_resource type="Script" uid="uid://k8pcsuuauun4" path="res://godot_helpers/Additions/Physics/Vehicles/Car.gd" id="1_lsnnl"]
 [ext_resource type="Texture2D" uid="uid://bl7xtv7xje17r" path="res://godot_helpers/Additions/Examples/Assets/kenney_car_kit/Textures/colormap.png" id="1_x3usy"]
 [ext_resource type="PackedScene" uid="uid://mbbphrqglnq3" path="res://godot_helpers/Additions/Examples/CarPhysics/sedan_wheel.tscn" id="2_cnjfg"]
-[ext_resource type="Curve" uid="uid://4n6u0jdgkcsa" path="res://godot_helpers/Additions/Examples/CarPhysics/default_accel_curve.tres" id="2_ilo6x"]
-[ext_resource type="Script" uid="uid://efxjdagtt42r" path="res://godot_helpers/Additions/Physics/Vehicles/Wheel3D.gd" id="3_cnjfg"]
-[ext_resource type="Curve" uid="uid://bvbabpjfxqa3u" path="res://godot_helpers/Additions/Examples/CarPhysics/default_wheel_friction.tres" id="4_s7t7r"]
+[ext_resource type="Script" uid="uid://efxjdagtt42r" path="res://godot_helpers/Additions/Physics/Vehicles/Extras/Wheel3D.gd" id="3_cnjfg"]
 
 [sub_resource type="StandardMaterial3D" id="StandardMaterial3D_pjtcs"]
 resource_name = "colormap"
@@ -94,7 +92,6 @@ center_of_mass_mode = 1
 center_of_mass = Vector3(0, 0.22, 0)
 script = ExtResource("1_lsnnl")
 wheels = [NodePath("wheel_rear_right"), NodePath("wheel_rear_left"), NodePath("wheel_front_right"), NodePath("wheel_front_left")]
-accel_curve = ExtResource("2_ilo6x")
 metadata/_custom_type_script = "uid://k8pcsuuauun4"
 
 [node name="body" type="MeshInstance3D" parent="." unique_id=1809890593]
@@ -121,7 +118,6 @@ script = ExtResource("3_cnjfg")
 wheel_visual = NodePath("wheel_visual")
 steer_coefficient = 0.0
 drive_percent = 0.5
-friction_curve = ExtResource("4_s7t7r")
 
 [node name="wheel_visual" type="Node3D" parent="wheel_rear_right" unique_id=983506761]
 
@@ -134,7 +130,6 @@ script = ExtResource("3_cnjfg")
 wheel_visual = NodePath("wheel_visual")
 steer_coefficient = 0.0
 drive_percent = 0.5
-friction_curve = ExtResource("4_s7t7r")
 
 [node name="wheel_visual" type="Node3D" parent="wheel_rear_left" unique_id=22559646]
 
@@ -146,7 +141,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.43, 0.3, 0.66)
 script = ExtResource("3_cnjfg")
 wheel_visual = NodePath("wheel_visual")
 drive_percent = 0.0
-friction_curve = ExtResource("4_s7t7r")
 
 [node name="wheel_visual" type="Node3D" parent="wheel_front_right" unique_id=1237960472]
 
@@ -158,7 +152,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.43, 0.3, 0.66)
 script = ExtResource("3_cnjfg")
 wheel_visual = NodePath("wheel_visual")
 drive_percent = 0.0
-friction_curve = ExtResource("4_s7t7r")
 
 [node name="wheel_visual" type="Node3D" parent="wheel_front_left" unique_id=56179370]
 

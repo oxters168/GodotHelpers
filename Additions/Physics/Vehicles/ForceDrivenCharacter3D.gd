@@ -13,6 +13,10 @@ class_name ForceDrivenCharacter3D
 ## Needed in order re-orient the move direction based on the look direction of the camera.
 ## If not set then move direction will be calculated in the global space.
 @export var camera: Node3D
+
+## Info on occupying and being occupied
+@export var occupant_info: IOccupy = preload("res://godot_helpers/Additions/Physics/Vehicles/Extras/occupier_with_0_seats.tres")
+
 ## Show debug data
 @export var debug: bool
 

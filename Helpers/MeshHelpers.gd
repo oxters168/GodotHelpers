@@ -173,6 +173,18 @@ static func calculate_size_from_points(points: PackedVector3Array) -> Vector3:
 		if point.y < smallest_values.y: smallest_values.y = point.y
 		if point.z < smallest_values.z: smallest_values.z = point.z
 	return largest_values - smallest_values
+## Calculates the center point of the smallest bounding box surrounding the given points
+static func calculate_center_from_points(points: PackedVector3Array) -> Vector3:
+	var smallest_values: Vector3 = Vector3.ZERO
+	var largest_values: Vector3 = Vector3.ZERO
+	for point in points:
+		if point.x > largest_values.x: largest_values.x = point.x
+		if point.y > largest_values.y: largest_values.y = point.y
+		if point.z > largest_values.z: largest_values.z = point.z
+		if point.x < smallest_values.x: smallest_values.x = point.x
+		if point.y < smallest_values.y: smallest_values.y = point.y
+		if point.z < smallest_values.z: smallest_values.z = point.z
+	return smallest_values + (largest_values - smallest_values) / 2
 
 ## Converts the given [Shape3D] to a [Mesh] (currently only supports [BoxShape3D], [CapsuleShape3D], [CylinderShape3D], [SphereShape3D], [ConvexPolygonShape3D])
 static func collision_shape_to_mesh(shape: Shape3D, subdivide_width: int = 0, subdivide_height: int = 0, subdivide_depth: int = 0, radial_segments: int = 16, rings: int = 4) -> Mesh:

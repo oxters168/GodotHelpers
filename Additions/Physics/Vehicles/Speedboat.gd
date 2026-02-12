@@ -11,6 +11,9 @@ class_name SpeedBoat
 ## The max turn speed of the boat in radians per second
 @export var max_turn_speed: float = 2 * PI
 
+## Info on occupying and being occupied
+@export var occupant_info: IOccupy = preload("res://godot_helpers/Additions/Physics/Vehicles/Extras/non_occupier_with_2_seats.tres")
+
 ## Show debug data
 @export var debug: bool = false
 

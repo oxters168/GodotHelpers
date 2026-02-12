@@ -170,11 +170,11 @@ static func draw_axes(_transform: Transform3D, _scale = 1.0, linger_frames: int 
 ## @param linger_frames: optionally makes the box remain drawn for longer
 static func draw_box_aabb(aabb: AABB, color = Color.WHITE, linger_frames: int = 0):
 	_check_singleton_created_or_create()
-	var mi := _get_box()
+	var mi: MeshInstance3D = _get_box()
 	var mat := _get_line_material()
 	mat.albedo_color = color
 	mi.material_override = mat
-	mi.translation = aabb.position
+	mi.position = aabb.position + aabb.size / 2
 	mi.scale = aabb.size
 	_boxes.append({
 		"node": mi,

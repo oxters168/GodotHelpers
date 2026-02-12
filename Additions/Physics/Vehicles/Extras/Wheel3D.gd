@@ -22,7 +22,7 @@ class_name Wheel3D
 @export_range(0, 1) var drive_percent: float = 0.25
 ## How much percent slip the wheel resists, represented by the y-axis, in relation to the percent
 ## velocity it currently has along the slip direction, represented by the x-axis
-@export var friction_curve: Curve
+@export var friction_curve: Curve = preload("res://godot_helpers/Additions/Examples/CarPhysics/default_wheel_friction.tres")
 
 @export_category("Debug")
 @export var debug: bool = false

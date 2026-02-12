@@ -29,6 +29,9 @@ class_name Helicopter
 ## The node to be spun for the tail blades as the helicopter rotates
 @export var tail_blades: Node3D
 
+## Info on occupying and being occupied
+@export var occupant_info: IOccupy = preload("res://godot_helpers/Additions/Physics/Vehicles/Extras/non_occupier_with_2_seats.tres")
+
 ## Show debug info
 @export var debug: bool
 
