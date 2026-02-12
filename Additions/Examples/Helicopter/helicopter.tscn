@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bpcyik8syld8o"]
 
 [ext_resource type="Script" uid="uid://di2o7iuxrctdy" path="res://godot_helpers/Additions/Physics/Vehicles/Helicopter.gd" id="1_dyel1"]
+[ext_resource type="Resource" uid="uid://di7r7yduts4xm" path="res://godot_helpers/Additions/Physics/Vehicles/Extras/helicopter_occupant_info.tres" id="2_0envi"]
 [ext_resource type="PackedScene" uid="uid://vv8qu0yr5ccg" path="res://godot_helpers/Additions/Examples/Assets/asset_forge_deluxe/helicopter/helicopter_body.glb" id="2_f3f4t"]
 [ext_resource type="PackedScene" uid="uid://b3a0g1xvxbq1d" path="res://godot_helpers/Additions/Examples/Assets/asset_forge_deluxe/helicopter/helicopter_blades.glb" id="3_uhhpq"]
 [ext_resource type="PackedScene" uid="uid://dme27y5fhun6t" path="res://godot_helpers/Additions/Examples/Assets/asset_forge_deluxe/helicopter/helicopter_tail.glb" id="4_j86ug"]
@@ -27,6 +28,7 @@ center_of_mass = Vector3(0, 0.61235094, 0)
 script = ExtResource("1_dyel1")
 top_blades = NodePath("helicopter_blades")
 tail_blades = NodePath("helicopter_tail")
+occupant_info = ExtResource("2_0envi")
 metadata/_custom_type_script = "uid://di2o7iuxrctdy"
 
 [node name="helicopter_body_shape" type="CollisionShape3D" parent="." unique_id=365758126]

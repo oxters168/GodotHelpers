@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="IOccupy" format=3 uid="uid://dxryam083m1tp"]
+
+[ext_resource type="Script" uid="uid://dxnrhpf5i1lsd" path="res://godot_helpers/Additions/Physics/Vehicles/Extras/IOccupy.gd" id="1_d61n0"]
+
+[resource]
+script = ExtResource("1_d61n0")
+can_occupy = 14
+metadata/_custom_type_script = "uid://dxnrhpf5i1lsd"

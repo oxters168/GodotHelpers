@@ -1,0 +1,105 @@
+[gd_scene format=3 uid="uid://bw07ap8kxtsho"]
+
+[ext_resource type="Script" uid="uid://80g44032yl8n" path="res://godot_helpers/Additions/Examples/MultipleVehicles/PlayerInputController.gd" id="1_x46eg"]
+[ext_resource type="Script" uid="uid://dvt5sxxkp8els" path="res://godot_helpers/Additions/Cameras/OrbitCamera.gd" id="2_s4ro4"]
+[ext_resource type="Script" uid="uid://c3lnywjnhjww4" path="res://godot_helpers/Additions/Physics/Ocean.gd" id="3_isgnk"]
+[ext_resource type="Texture2D" uid="uid://cxws5pl63a1s4" path="res://assets/tiled.png" id="4_bjj0x"]
+[ext_resource type="PackedScene" uid="uid://bco0o2gwajku4" path="res://godot_helpers/Additions/Examples/CarPhysics/sedan_sports.tscn" id="5_mjosf"]
+[ext_resource type="Script" uid="uid://dpqpbykwxuqdi" path="res://godot_helpers/Additions/Physics/Vehicles/ForceDrivenCharacter3D.gd" id="6_xm7xp"]
+[ext_resource type="PackedScene" uid="uid://bpcyik8syld8o" path="res://godot_helpers/Additions/Examples/Helicopter/helicopter.tscn" id="7_brkes"]
+[ext_resource type="PackedScene" uid="uid://cmb7h0qob7ej2" path="res://godot_helpers/Additions/Examples/SpeedBoat/speed_boat.tscn" id="8_eqvcw"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_oo3x0"]
+size = Vector3(6, 1, 6)
+
+[sub_resource type="BoxMesh" id="BoxMesh_sxg51"]
+size = Vector3(6, 1, 6)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_gppxh"]
+size = Vector3(1000, 10, 1000)
+
+[sub_resource type="BoxMesh" id="BoxMesh_oo3x0"]
+size = Vector3(1000, 10, 1000)
+
+[sub_resource type="StandardMaterial3D" id="StandardMaterial3D_sxg51"]
+albedo_texture = ExtResource("4_bjj0x")
+metallic_specular = 0.0
+uv1_scale = Vector3(750, 500, 500)
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_gppxh"]
+
+[sub_resource type="CapsuleMesh" id="CapsuleMesh_oo3x0"]
+
+[node name="MultiVehicleExample" type="Node3D" unique_id=1352035346]
+
+[node name="PlayerInputController" type="Node3D" parent="." unique_id=1982050096 node_paths=PackedStringArray("target", "camera")]
+script = ExtResource("1_x46eg")
+target = NodePath("../ForceDrivenCharacter3D")
+camera = NodePath("../OrbitCamera")
+metadata/_custom_type_script = "uid://80g44032yl8n"
+
+[node name="OrbitCamera" type="Camera3D" parent="." unique_id=188782827]
+script = ExtResource("2_s4ro4")
+mouse_input = true
+distance = 10.0
+limit_angle = false
+look_input_enabled = false
+metadata/_custom_type_script = "uid://dvt5sxxkp8els"
+
+[node name="Ocean" type="Node3D" parent="." unique_id=1470172931]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 13, -0.1, 0)
+script = ExtResource("3_isgnk")
+tile_distance = 2
+linear_damp_space_override = 3
+linear_damp = 1.4
+angular_damp_space_override = 3
+angular_damp = 1.4
+metadata/_custom_type_script = "uid://c3lnywjnhjww4"
+
+[node name="StaticBody3D" type="StaticBody3D" parent="." unique_id=2095670773]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="StaticBody3D" unique_id=1311764230]
+shape = SubResource("BoxShape3D_oo3x0")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="StaticBody3D/CollisionShape3D" unique_id=493005370]
+mesh = SubResource("BoxMesh_sxg51")
+
+[node name="Ground" type="StaticBody3D" parent="." unique_id=1868359118]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -490, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Ground" unique_id=916439013]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0)
+shape = SubResource("BoxShape3D_gppxh")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="Ground" unique_id=1117983811]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, -5, 0)
+mesh = SubResource("BoxMesh_oo3x0")
+surface_material_override/0 = SubResource("StandardMaterial3D_sxg51")
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2012910442]
+transform = Transform3D(0.70710677, -0.61237246, 0.35355335, 0, 0.49999997, 0.86602545, -0.70710677, -0.61237246, 0.35355335, 0, 0, 0)
+
+[node name="SedanSports" parent="." unique_id=1248938161 instance=ExtResource("5_mjosf")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 0)
+
+[node name="ForceDrivenCharacter3D" type="RigidBody3D" parent="." unique_id=1913814879]
+mass = 10.0
+lock_rotation = true
+script = ExtResource("6_xm7xp")
+debug = true
+metadata/_custom_type_script = "uid://dpqpbykwxuqdi"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ForceDrivenCharacter3D" unique_id=696072945]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
+shape = SubResource("CapsuleShape3D_gppxh")
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="ForceDrivenCharacter3D/CollisionShape3D" unique_id=1792374596]
+mesh = SubResource("CapsuleMesh_oo3x0")
+
+[node name="Helicopter" parent="." unique_id=2035592377 instance=ExtResource("7_brkes")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.5, 0)
+
+[node name="SpeedBoat" parent="." unique_id=1884655739 instance=ExtResource("8_eqvcw")]
+transform = Transform3D(1, 0, 0, 0, 1.0000002, 0, 0, 0, 1.0000001, 13, 0, 0)
+collision_mask = 3

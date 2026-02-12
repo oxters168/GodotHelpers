@@ -1,0 +1,9 @@
+[gd_resource type="Resource" script_class="IOccupy" format=3 uid="uid://d2qr3e5wc4qy0"]
+
+[ext_resource type="Script" uid="uid://dxnrhpf5i1lsd" path="res://godot_helpers/Additions/Physics/Vehicles/Extras/IOccupy.gd" id="1_h427j"]
+
+[resource]
+script = ExtResource("1_h427j")
+occupant_seats = 2
+exit_spots = Array[Vector3]([Vector3(1.5, 0, 0), Vector3(-1.5, 0, 0)])
+metadata/_custom_type_script = "uid://dxnrhpf5i1lsd"
