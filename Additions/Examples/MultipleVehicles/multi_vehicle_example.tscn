@@ -3,7 +3,7 @@
 [ext_resource type="Script" uid="uid://80g44032yl8n" path="res://godot_helpers/Additions/Examples/MultipleVehicles/PlayerInputController.gd" id="1_x46eg"]
 [ext_resource type="Script" uid="uid://dvt5sxxkp8els" path="res://godot_helpers/Additions/Cameras/OrbitCamera.gd" id="2_s4ro4"]
 [ext_resource type="Script" uid="uid://c3lnywjnhjww4" path="res://godot_helpers/Additions/Physics/Ocean.gd" id="3_isgnk"]
-[ext_resource type="Texture2D" uid="uid://cxws5pl63a1s4" path="res://assets/tiled.png" id="4_bjj0x"]
+[ext_resource type="Texture2D" uid="uid://cxws5pl63a1s4" path="res://godot_helpers/Additions/Examples/Assets/krita/tiled.png" id="4_bjj0x"]
 [ext_resource type="PackedScene" uid="uid://bco0o2gwajku4" path="res://godot_helpers/Additions/Examples/CarPhysics/sedan_sports.tscn" id="5_mjosf"]
 [ext_resource type="PackedScene" uid="uid://mak4knq63oq7" path="res://godot_helpers/Additions/Examples/ForceDrivenCharacter/female_b_2.tscn" id="6_x46eg"]
 [ext_resource type="PackedScene" uid="uid://bpcyik8syld8o" path="res://godot_helpers/Additions/Examples/Helicopter/helicopter.tscn" id="7_brkes"]

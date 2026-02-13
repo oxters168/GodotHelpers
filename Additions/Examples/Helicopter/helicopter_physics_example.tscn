@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://c7u7ebcswhkfp"]
 
 [ext_resource type="Script" uid="uid://80g44032yl8n" path="res://godot_helpers/Additions/Examples/MultipleVehicles/PlayerInputController.gd" id="1_324c8"]
-[ext_resource type="Texture2D" uid="uid://cxws5pl63a1s4" path="res://assets/tiled.png" id="1_uf7j5"]
+[ext_resource type="Texture2D" uid="uid://cxws5pl63a1s4" path="res://godot_helpers/Additions/Examples/Assets/krita/tiled.png" id="1_uf7j5"]
 [ext_resource type="PackedScene" uid="uid://bpcyik8syld8o" path="res://godot_helpers/Additions/Examples/Helicopter/helicopter.tscn" id="2_324c8"]
 [ext_resource type="Script" uid="uid://dvt5sxxkp8els" path="res://godot_helpers/Additions/Cameras/OrbitCamera.gd" id="3_mdepl"]
 

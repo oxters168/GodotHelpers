@@ -1,6 +1,6 @@
 [gd_scene format=3 uid="uid://dwukbphxt4uk8"]
 
-[ext_resource type="Texture2D" uid="uid://cxws5pl63a1s4" path="res://assets/tiled.png" id="1_glo13"]
+[ext_resource type="Texture2D" uid="uid://cxws5pl63a1s4" path="res://godot_helpers/Additions/Examples/Assets/krita/tiled.png" id="1_glo13"]
 [ext_resource type="Script" uid="uid://80g44032yl8n" path="res://godot_helpers/Additions/Examples/MultipleVehicles/PlayerInputController.gd" id="1_qw2rf"]
 [ext_resource type="PackedScene" uid="uid://mak4knq63oq7" path="res://godot_helpers/Additions/Examples/ForceDrivenCharacter/female_b_2.tscn" id="2_88qgh"]
 [ext_resource type="Script" uid="uid://dvt5sxxkp8els" path="res://godot_helpers/Additions/Cameras/OrbitCamera.gd" id="3_owfoq"]
