@@ -1,18 +1,25 @@
 [gd_scene format=3 uid="uid://d038h4v6r02ev"]
 
 [ext_resource type="Script" uid="uid://dvt5sxxkp8els" path="res://godot_helpers/Additions/Cameras/OrbitCamera.gd" id="1_6xatv"]
+[ext_resource type="Script" uid="uid://80g44032yl8n" path="res://godot_helpers/Additions/Examples/MultipleVehicles/PlayerInputController.gd" id="1_jlml5"]
 [ext_resource type="PackedScene" uid="uid://cmb7h0qob7ej2" path="res://godot_helpers/Additions/Examples/SpeedBoat/speed_boat.tscn" id="2_jlml5"]
 [ext_resource type="Script" uid="uid://b8ltpxfr3ah10" path="res://godot_helpers/Additions/Physics/Buoyancy.gd" id="3_1fyue"]
 [ext_resource type="Script" uid="uid://c3lnywjnhjww4" path="res://godot_helpers/Additions/Physics/Ocean.gd" id="4_5kb7l"]
 
 [node name="Node3D" type="Node3D" unique_id=1206301656]
 
+[node name="PlayerInputController" type="Node3D" parent="." unique_id=465663226 node_paths=PackedStringArray("target", "camera")]
+script = ExtResource("1_jlml5")
+target = NodePath("../SpeedBoat")
+camera = NodePath("../OrbitCamera")
+metadata/_custom_type_script = "uid://80g44032yl8n"
+
 [node name="OrbitCamera" type="Camera3D" parent="." unique_id=101763231 node_paths=PackedStringArray("target")]
 script = ExtResource("1_6xatv")
-mouse_input = true
 target = NodePath("../SpeedBoat")
 limit_angle = false
 look_input_enabled = false
+mouse_input_enabled = true
 metadata/_custom_type_script = "uid://dvt5sxxkp8els"
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2010214075]

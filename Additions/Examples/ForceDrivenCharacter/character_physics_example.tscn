@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://dwukbphxt4uk8"]
 
 [ext_resource type="Texture2D" uid="uid://cxws5pl63a1s4" path="res://assets/tiled.png" id="1_glo13"]
+[ext_resource type="Script" uid="uid://80g44032yl8n" path="res://godot_helpers/Additions/Examples/MultipleVehicles/PlayerInputController.gd" id="1_qw2rf"]
 [ext_resource type="PackedScene" uid="uid://mak4knq63oq7" path="res://godot_helpers/Additions/Examples/ForceDrivenCharacter/female_b_2.tscn" id="2_88qgh"]
 [ext_resource type="Script" uid="uid://dvt5sxxkp8els" path="res://godot_helpers/Additions/Cameras/OrbitCamera.gd" id="3_owfoq"]
 
@@ -16,6 +17,12 @@ metallic_specular = 0.0
 uv1_scale = Vector3(750, 500, 500)
 
 [node name="Node3D" type="Node3D" unique_id=841881788]
+
+[node name="PlayerInputController" type="Node3D" parent="." unique_id=1441198128 node_paths=PackedStringArray("target", "camera")]
+script = ExtResource("1_qw2rf")
+target = NodePath("../FemaleB2")
+camera = NodePath("../OrbitCamera")
+metadata/_custom_type_script = "uid://80g44032yl8n"
 
 [node name="Ground" type="StaticBody3D" parent="." unique_id=842780688]
 
