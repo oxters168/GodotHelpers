@@ -122,13 +122,21 @@ func _physics_process(delta: float) -> void:
 			# set animation
 			var anim_player: AnimationPlayer = NodeHelpers.get_child_of_type(character_model, AnimationPlayer)
 			if anim_player:
-				var remainder_percent: float = (1 - walk_percent_cutoff)
-				var walk_percent: float = min(move_speed / (max_speed * walk_percent_cutoff), 1)
-				var sprint_percent: float = max((move_speed - (max_speed * walk_percent_cutoff)) / (max_speed * remainder_percent), 0)
-				if sprint_percent > 0:
-					anim_player.play("sprint", -1, sprint_percent * remainder_percent + walk_percent_cutoff)
+				if abs(air_velocity) > 0.1:
+					if air_velocity > 0:
+						anim_player.play("jump")
+					else:
+						anim_player.play("fall")
+				elif move_speed > Constants.EPSILON:
+					var remainder_percent: float = (1 - walk_percent_cutoff)
+					var walk_percent: float = min(move_speed / (max_speed * walk_percent_cutoff), 1)
+					var sprint_percent: float = max((move_speed - (max_speed * walk_percent_cutoff)) / (max_speed * remainder_percent), 0)
+					if sprint_percent > 0:
+						anim_player.play("sprint", -1, sprint_percent * remainder_percent + walk_percent_cutoff)
+					else:
+						anim_player.play("walk", -1, walk_percent)
 				else:
-					anim_player.play("walk", -1, walk_percent)
+					anim_player.play("idle")
 	
 	_prev_jump_btn = jump_btn
 

@@ -28,8 +28,9 @@ uv1_scale = Vector3(750, 500, 500)
 
 [node name="MultiVehicleExample" type="Node3D" unique_id=1352035346]
 
-[node name="PlayerInputController" type="Node3D" parent="." unique_id=1982050096 node_paths=PackedStringArray("camera")]
+[node name="PlayerInputController" type="Node3D" parent="." unique_id=1982050096 node_paths=PackedStringArray("target", "camera")]
 script = ExtResource("1_x46eg")
+target = NodePath("../FemaleB2")
 camera = NodePath("../OrbitCamera")
 metadata/_custom_type_script = "uid://80g44032yl8n"
 
