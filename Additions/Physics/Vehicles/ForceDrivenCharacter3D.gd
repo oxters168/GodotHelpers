@@ -10,6 +10,10 @@ class_name ForceDrivenCharacter3D
 @export var deceleration: float = 5
 ## The speed the jump starts with
 @export var jump_speed: float = 5
+## The character model that needs rotating based on movement direction
+@export var character_model: Node3D
+## How far into max speed should the walk animation turn into sprint
+@export_range(0, 1) var walk_percent_cutoff: float = 0.66
 ## Needed in order re-orient the move direction based on the look direction of the camera.
 ## If not set then move direction will be calculated in the global space.
 @export var camera: Node3D
@@ -30,6 +34,7 @@ var jump_btn: bool
 
 var _floor_raycast: ShapeCast3D
 var _prev_jump_btn: bool
+var _prev_direction: Vector3 = Vector3.FORWARD
 
 func _init() -> void:
 	if Engine.is_editor_hint():
@@ -40,7 +45,7 @@ func _ready() -> void:
 		var bounds: AABB = BoundsHelpers.get_total_bounds_3d(self, true)
 		var mid_height: float = bounds.size.y / 2
 		var box_shape: BoxShape3D = BoxShape3D.new()
-		box_shape.size = Vector3(bounds.size.x, mid_height + 0.2, bounds.size.z)
+		box_shape.size = Vector3(bounds.size.x * 0.8, mid_height + 0.2, bounds.size.z * 0.8)
 		_floor_raycast = ShapeCast3D.new()
 		_floor_raycast.shape = box_shape
 		_floor_raycast.position = Vector3.UP * mid_height
@@ -103,6 +108,27 @@ func _physics_process(delta: float) -> void:
 			if debug:
 				DebugDraw.draw_ray_3d(global_position + global_up, stop_force.normalized(), (stop_force.length() / (deceleration * mass)) * 2, Color.RED)
 			apply_force(stop_force)
+		
+		if character_model:
+			# set direction
+			var current_direction: Vector3 = _prev_direction
+			var air_velocity: float = linear_velocity.dot(global_up)
+			var move_velocity: Vector3 = linear_velocity - (global_up * air_velocity)
+			var move_speed: float = move_velocity.length()
+			if move_speed > 0.1:
+				current_direction = -move_velocity.normalized()
+			character_model.global_basis = Basis.looking_at(current_direction, global_up)
+			_prev_direction = current_direction
+			# set animation
+			var anim_player: AnimationPlayer = NodeHelpers.get_child_of_type(character_model, AnimationPlayer)
+			if anim_player:
+				var remainder_percent: float = (1 - walk_percent_cutoff)
+				var walk_percent: float = min(move_speed / (max_speed * walk_percent_cutoff), 1)
+				var sprint_percent: float = max((move_speed - (max_speed * walk_percent_cutoff)) / (max_speed * remainder_percent), 0)
+				if sprint_percent > 0:
+					anim_player.play("sprint", -1, sprint_percent * remainder_percent + walk_percent_cutoff)
+				else:
+					anim_player.play("walk", -1, walk_percent)
 	
 	_prev_jump_btn = jump_btn
 

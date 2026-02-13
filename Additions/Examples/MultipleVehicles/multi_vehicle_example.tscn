@@ -5,7 +5,7 @@
 [ext_resource type="Script" uid="uid://c3lnywjnhjww4" path="res://godot_helpers/Additions/Physics/Ocean.gd" id="3_isgnk"]
 [ext_resource type="Texture2D" uid="uid://cxws5pl63a1s4" path="res://assets/tiled.png" id="4_bjj0x"]
 [ext_resource type="PackedScene" uid="uid://bco0o2gwajku4" path="res://godot_helpers/Additions/Examples/CarPhysics/sedan_sports.tscn" id="5_mjosf"]
-[ext_resource type="Script" uid="uid://dpqpbykwxuqdi" path="res://godot_helpers/Additions/Physics/Vehicles/ForceDrivenCharacter3D.gd" id="6_xm7xp"]
+[ext_resource type="PackedScene" uid="uid://mak4knq63oq7" path="res://godot_helpers/Additions/Examples/ForceDrivenCharacter/female_b_2.tscn" id="6_x46eg"]
 [ext_resource type="PackedScene" uid="uid://bpcyik8syld8o" path="res://godot_helpers/Additions/Examples/Helicopter/helicopter.tscn" id="7_brkes"]
 [ext_resource type="PackedScene" uid="uid://cmb7h0qob7ej2" path="res://godot_helpers/Additions/Examples/SpeedBoat/speed_boat.tscn" id="8_eqvcw"]
 
@@ -26,15 +26,10 @@ albedo_texture = ExtResource("4_bjj0x")
 metallic_specular = 0.0
 uv1_scale = Vector3(750, 500, 500)
 
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_gppxh"]
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_oo3x0"]
-
 [node name="MultiVehicleExample" type="Node3D" unique_id=1352035346]
 
-[node name="PlayerInputController" type="Node3D" parent="." unique_id=1982050096 node_paths=PackedStringArray("target", "camera")]
+[node name="PlayerInputController" type="Node3D" parent="." unique_id=1982050096 node_paths=PackedStringArray("camera")]
 script = ExtResource("1_x46eg")
-target = NodePath("../ForceDrivenCharacter3D")
 camera = NodePath("../OrbitCamera")
 metadata/_custom_type_script = "uid://80g44032yl8n"
 
@@ -84,19 +79,7 @@ transform = Transform3D(0.70710677, -0.61237246, 0.35355335, 0, 0.49999997, 0.86
 [node name="SedanSports" parent="." unique_id=1248938161 instance=ExtResource("5_mjosf")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -3, 0, 0)
 
-[node name="ForceDrivenCharacter3D" type="RigidBody3D" parent="." unique_id=1913814879]
-mass = 10.0
-lock_rotation = true
-script = ExtResource("6_xm7xp")
-debug = true
-metadata/_custom_type_script = "uid://dpqpbykwxuqdi"
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="ForceDrivenCharacter3D" unique_id=696072945]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-shape = SubResource("CapsuleShape3D_gppxh")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="ForceDrivenCharacter3D/CollisionShape3D" unique_id=1792374596]
-mesh = SubResource("CapsuleMesh_oo3x0")
+[node name="FemaleB2" parent="." unique_id=2044104057 instance=ExtResource("6_x46eg")]
 
 [node name="Helicopter" parent="." unique_id=2035592377 instance=ExtResource("7_brkes")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.5, 0)

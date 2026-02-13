@@ -1,0 +1,21 @@
+[gd_scene format=3 uid="uid://mak4knq63oq7"]
+
+[ext_resource type="Script" uid="uid://dpqpbykwxuqdi" path="res://godot_helpers/Additions/Physics/Vehicles/ForceDrivenCharacter3D.gd" id="1_dpuad"]
+[ext_resource type="PackedScene" uid="uid://k0mdnn2fwv2c" path="res://godot_helpers/Additions/Examples/Assets/kenney_mini_characters/character-female-b.glb" id="2_a4tud"]
+
+[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_gppxh"]
+radius = 0.2
+height = 0.8
+
+[node name="FemaleB2" type="RigidBody3D" unique_id=2044104057 node_paths=PackedStringArray("character_model")]
+mass = 10.0
+lock_rotation = true
+script = ExtResource("1_dpuad")
+character_model = NodePath("character-female-b2")
+metadata/_custom_type_script = "uid://dpqpbykwxuqdi"
+
+[node name="character-female-b2" parent="." unique_id=1758636512 instance=ExtResource("2_a4tud")]
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=49610622]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.4, 0)
+shape = SubResource("CapsuleShape3D_gppxh")

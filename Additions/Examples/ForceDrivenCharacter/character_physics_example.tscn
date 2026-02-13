@@ -1,7 +1,7 @@
 [gd_scene format=3 uid="uid://dwukbphxt4uk8"]
 
 [ext_resource type="Texture2D" uid="uid://cxws5pl63a1s4" path="res://assets/tiled.png" id="1_glo13"]
-[ext_resource type="Script" uid="uid://dpqpbykwxuqdi" path="res://godot_helpers/Additions/Physics/Vehicles/ForceDrivenCharacter3D.gd" id="2_gilc6"]
+[ext_resource type="PackedScene" uid="uid://mak4knq63oq7" path="res://godot_helpers/Additions/Examples/ForceDrivenCharacter/female_b_2.tscn" id="2_88qgh"]
 [ext_resource type="Script" uid="uid://dvt5sxxkp8els" path="res://godot_helpers/Additions/Cameras/OrbitCamera.gd" id="3_owfoq"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_gilc6"]
@@ -14,10 +14,6 @@ size = Vector3(1000, 10, 1000)
 albedo_texture = ExtResource("1_glo13")
 metallic_specular = 0.0
 uv1_scale = Vector3(750, 500, 500)
-
-[sub_resource type="CapsuleShape3D" id="CapsuleShape3D_owfoq"]
-
-[sub_resource type="CapsuleMesh" id="CapsuleMesh_7qbxd"]
 
 [node name="Node3D" type="Node3D" unique_id=841881788]
 
@@ -35,25 +31,14 @@ surface_material_override/0 = SubResource("StandardMaterial3D_7qbxd")
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=193723205]
 transform = Transform3D(0.7071068, -0.61237246, 0.35355338, 0, 0.49999997, 0.86602545, -0.7071068, -0.61237246, 0.35355338, 0, 0, 0)
 
-[node name="ForceDrivenCharacter3D" type="RigidBody3D" parent="." unique_id=1596639748 node_paths=PackedStringArray("camera")]
-mass = 10.0
-lock_rotation = true
-script = ExtResource("2_gilc6")
+[node name="FemaleB2" parent="." unique_id=2044104057 node_paths=PackedStringArray("camera") instance=ExtResource("2_88qgh")]
 camera = NodePath("../OrbitCamera")
 debug = true
-metadata/_custom_type_script = "uid://dpqpbykwxuqdi"
-
-[node name="CollisionShape3D" type="CollisionShape3D" parent="ForceDrivenCharacter3D" unique_id=46182414]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1, 0)
-shape = SubResource("CapsuleShape3D_owfoq")
-
-[node name="MeshInstance3D" type="MeshInstance3D" parent="ForceDrivenCharacter3D/CollisionShape3D" unique_id=725823344]
-mesh = SubResource("CapsuleMesh_7qbxd")
 
 [node name="OrbitCamera" type="Camera3D" parent="." unique_id=1809448691 node_paths=PackedStringArray("target")]
 script = ExtResource("3_owfoq")
-mouse_input = true
-target = NodePath("../ForceDrivenCharacter3D")
+target = NodePath("../FemaleB2")
 limit_angle = false
 look_input_enabled = false
+mouse_input_enabled = true
 metadata/_custom_type_script = "uid://dvt5sxxkp8els"

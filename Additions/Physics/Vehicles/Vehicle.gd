@@ -109,7 +109,7 @@ func set_input_button(input_btn: InputButton, value: bool) -> void:
 	if input_btn == InputButton.OCCUPY_BTN:
 		var local_bounds: AABB = BoundsHelpers.get_total_bounds_3d(_vehicle, true)
 		var global_bounds: AABB = BoundsHelpers.get_total_bounds_3d(_vehicle, true, true)
-		var radius: float = (max(local_bounds.size.x, local_bounds.size.y, local_bounds.size.z) / 2) * 1.5
+		var radius: float = (max(local_bounds.size.x, local_bounds.size.y, local_bounds.size.z) / 2) * 2
 		if value:
 			DebugDraw.draw_circle_3d(global_bounds.get_center(), CameraHelpers.get_active_camera_3d().global_basis.get_rotation_quaternion(), radius, Color.BLUE)
 		if not value and _prev_occupy_btn:
