@@ -5,7 +5,7 @@ class_name Car
 @export var wheels: Array[Wheel3D]
 
 ## The maximum speed the car can travel in meters per second
-@export var max_speed: float = 20
+@export var max_speed: float = 30
 ## The acceleration of the car in meters per second squared
 @export var acceleration: float = 10
 ## The deceleration of the car in meters per second squared

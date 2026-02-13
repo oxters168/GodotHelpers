@@ -14,8 +14,6 @@ class_name Wheel3D
 @export var spring_damper: float = 2
 ## The radius of the wheel in meters
 @export var wheel_radius: float = 0.3
-## The thickness of the wheel in meters
-@export var wheel_thickness: float = 0.1
 ## The multiplier on the steer angle of the wheel when the angle is set (applied after clamping)
 @export_range(-1, 1) var steer_coefficient: float = 1
 ## The percent force this wheel has to drive from the acceleration of the wheelable vehicle
@@ -42,15 +40,16 @@ var _prev_wheel_forward: Vector3
 var _prev_wheel_right: Vector3
 var _prev_roll_velocity: float = 0
 
-func _init() -> void:
-	if not Engine.is_editor_hint():
-		_raycast = RayCast3D.new()
-		_raycast.target_position = Vector3.DOWN * suspension_rest_dist
-		add_child(_raycast)
 func _ready() -> void:
 	if not Engine.is_editor_hint():
 		_prev_wheel_forward = NodeHelpers.get_global_forward(self)
 		_prev_wheel_right = NodeHelpers.get_global_right(self)
+
+		# there was a bug with _init having the default value of suspension_rest_dist instead of the value set in the inspector
+		_raycast = RayCast3D.new()
+		_raycast.target_position = Vector3.DOWN * suspension_rest_dist
+		_raycast.enabled = false
+		add_child(_raycast)
 
 func _process(_delta: float) -> void:
 	var wheel_up: Vector3 = NodeHelpers.get_global_up(self)
@@ -70,6 +69,7 @@ func calculate_force_on_vehicle(car: Car, input_vector: Vector2, delta: float) -
 	var wheel_right: Vector3 = NodeHelpers.get_global_right(self).rotated(NodeHelpers.get_global_up(self), _current_angle)
 	var wheel_up: Vector3 = NodeHelpers.get_global_up(self)
 	
+	_raycast.force_raycast_update()
 	if _raycast.is_colliding():
 		# var car_body_state: PhysicsDirectBodyState3D = PhysicsServer3D.body_get_direct_state(car.get_rid())
 		# var tire_velocity: Vector3 = car_body_state.get_velocity_at_local_position(position)
@@ -80,11 +80,13 @@ func calculate_force_on_vehicle(car: Car, input_vector: Vector2, delta: float) -
 
 		if (abs(input_vector.y) > Constants.EPSILON):
 			# Calculate drive/brake force
-			var percent_velocity: float = NodeHelpers.get_global_forward(car).dot(car.linear_velocity) / car.max_speed
+			var car_velocity: float = NodeHelpers.get_global_forward(car).dot(car.linear_velocity)
+			var percent_velocity: float = abs(car_velocity) / car.max_speed
 			_drive_multiplier = (car.accel_curve.sample(percent_velocity) if car.accel_curve else 1.0)
-			var accel_to_full: float = max(car.max_speed - abs(_roll_velocity), 0)
+			var accel_to_full: float = max(abs((input_vector.y * car.max_speed) - car_velocity), 0)
 			var accel: float = min(car.acceleration, accel_to_full)
-			var drive_mag: float = input_vector.y * drive_percent * accel * car.mass * _drive_multiplier
+			var anti_damp: float = (_roll_velocity * car.linear_damp) / delta
+			var drive_mag: float = sign(input_vector.y) * ((accel * drive_percent) + anti_damp) * car.mass * _drive_multiplier
 			var drive_force: Vector3 = wheel_forward * drive_mag
 			if debug:
 				DebugDraw.draw_ray_3d(global_position, wheel_forward, (drive_mag / (car.acceleration * car.mass)) * debug_ray_scale, Color.BLUE)
