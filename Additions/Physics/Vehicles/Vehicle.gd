@@ -11,15 +11,16 @@ enum VehicleType {
 	HELICOPTER = 0x8,
 }
 enum InputAxis {
-	VERTICAL_AXIS,   ## Normally gas/brake or forward/backward
-	HORIZONTAL_AXIS, ## Normally left/right
-	YAW_AXIS,        ## Currently only used with [Helicopter]
-	PITCH_AXIS,      ## Currently only used with [Helicopter]
-	LIFT_AXIS,       ## Currently only used with [Helicopter]
+	VERTICAL_AXIS,   ## forward/backward
+	HORIZONTAL_AXIS, ## left/right
+  DRIVE_AXIS,      ## gas/brake
+	YAW_AXIS,        ## rotate left/right
+	PITCH_AXIS,      ## pitch forward/back
+	LIFT_AXIS,       ## lift strength
 }
 enum InputButton {
-	JUMP_BTN, ## Currently only used with [ForceDrivenCharacter3D]
-	OCCUPY_BTN, ## For entering/exiting vehicles
+	JUMP_BTN,
+	OCCUPY_BTN, ## enter/exit
 }
 
 var _vehicle: Node3D
@@ -66,7 +67,7 @@ func set_input_axis(input_axis: InputAxis, value: float) -> void:
 	if controlled_vehicle is Car:
 		var car: Car = controlled_vehicle as Car
 		match input_axis:
-			InputAxis.VERTICAL_AXIS:
+			InputAxis.DRIVE_AXIS:
 				car.input_vector = Vector2(car.input_vector.x, value)
 			InputAxis.HORIZONTAL_AXIS:
 				car.input_vector = Vector2(value, car.input_vector.y)
@@ -74,7 +75,7 @@ func set_input_axis(input_axis: InputAxis, value: float) -> void:
 	elif controlled_vehicle is SpeedBoat:
 		var speedboat: SpeedBoat = controlled_vehicle as SpeedBoat
 		match input_axis:
-			InputAxis.VERTICAL_AXIS:
+			InputAxis.DRIVE_AXIS:
 				speedboat.input_vector = Vector2(speedboat.input_vector.x, value)
 			InputAxis.HORIZONTAL_AXIS:
 				speedboat.input_vector = Vector2(value, speedboat.input_vector.y)

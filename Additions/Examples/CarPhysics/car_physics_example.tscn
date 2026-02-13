@@ -31,15 +31,14 @@ surface_material_override/0 = SubResource("StandardMaterial3D_8d6rj")
 
 [node name="SedanSports" parent="." unique_id=1248938161 instance=ExtResource("2_800y1")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 6, 0)
-mass = 80.0
 debug = true
 
 [node name="OrbitCamera" type="Camera3D" parent="." unique_id=1970441951 node_paths=PackedStringArray("target")]
 script = ExtResource("3_8qj7d")
-mouse_input = true
 target = NodePath("../SedanSports")
 limit_angle = false
 look_input_enabled = false
+mouse_input_enabled = false
 metadata/_custom_type_script = "uid://dvt5sxxkp8els"
 
 [node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=147031136]

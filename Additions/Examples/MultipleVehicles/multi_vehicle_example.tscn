@@ -40,10 +40,11 @@ metadata/_custom_type_script = "uid://80g44032yl8n"
 
 [node name="OrbitCamera" type="Camera3D" parent="." unique_id=188782827]
 script = ExtResource("2_s4ro4")
-mouse_input = true
 distance = 10.0
 limit_angle = false
-look_input_enabled = false
+look_input_enabled = true
+mouse_input_enabled = true
+look_btn_enabled = false
 metadata/_custom_type_script = "uid://dvt5sxxkp8els"
 
 [node name="Ocean" type="Node3D" parent="." unique_id=1470172931]
