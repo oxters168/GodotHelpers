@@ -3,6 +3,7 @@ class_name PlayerInputController
 
 @export var target: Node3D
 @export var camera: OrbitCamera
+@export var ocean: Ocean
 
 func _process(_delta: float) -> void:
 	var vehicle: Vehicle
@@ -18,9 +19,12 @@ func _process(_delta: float) -> void:
 			vehicle.set_input_button(Vehicle.InputButton.JUMP_BTN, Input.is_action_pressed("jump"))
 			vehicle.set_input_button(Vehicle.InputButton.OCCUPY_BTN, Input.is_action_pressed("occupy"))
 			vehicle.set_camera(camera)
+	
+	var adjusted_target: Node3D = target
+	if vehicle:
+		adjusted_target = (vehicle._occupying if vehicle._occupying else adjusted_target)
 	if camera:
 		camera.input_look_vector = Vector2(Input.get_axis("look_hor_neg", "look_hor_pos"), Input.get_axis("look_ver_neg", "look_ver_pos"))
-		var adjusted_target: Node3D = target
-		if vehicle:
-			adjusted_target = (vehicle._occupying if vehicle._occupying else adjusted_target)
 		camera.target = adjusted_target
+	if ocean:
+		ocean.target = adjusted_target
