@@ -1,0 +1,8 @@
+[gd_resource type="Resource" script_class="VehicleData" format=3 uid="uid://dxryam083m1tp"]
+
+[ext_resource type="Script" uid="uid://dj6jplkfgd8io" path="res://godot_helpers/Additions/Physics/Vehicles/Extras/VehicleData.gd" id="1_yw2f7"]
+
+[resource]
+script = ExtResource("1_yw2f7")
+can_occupy = 14
+metadata/_custom_type_script = "uid://dj6jplkfgd8io"

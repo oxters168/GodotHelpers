@@ -1,0 +1,12 @@
+[gd_resource type="Resource" script_class="VehicleData" format=3 uid="uid://cd1f1sdy5o1f6"]
+
+[ext_resource type="Script" uid="uid://dj6jplkfgd8io" path="res://godot_helpers/Additions/Physics/Vehicles/Extras/VehicleData.gd" id="1_kxdk0"]
+
+[resource]
+script = ExtResource("1_kxdk0")
+occupant_seats = 2
+exit_spots = Array[Vector3]([Vector3(1.5, 0, 0), Vector3(-1.5, 0, 0)])
+can_tow = 2
+tow_give_spots = Array[Vector3]([Vector3(0, 0.5, -2)])
+tow_receive_spots = Array[Vector3]([Vector3(0, 0.5, 2), Vector3(0, 0.5, -2), Vector3(0, 1.5, 0)])
+metadata/_custom_type_script = "uid://dj6jplkfgd8io"

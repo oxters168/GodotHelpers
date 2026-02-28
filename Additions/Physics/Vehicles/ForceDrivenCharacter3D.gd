@@ -18,8 +18,8 @@ class_name ForceDrivenCharacter3D
 ## If not set then move direction will be calculated in the global space.
 @export var camera: Node3D
 
-## Info on occupying and being occupied
-@export var occupant_info: IOccupy = preload("res://godot_helpers/Additions/Physics/Vehicles/Extras/force_driven_character_occupant_info.tres")
+## Data regarding the vehicle (ex. occupancy)
+@export var data: VehicleData = preload("res://godot_helpers/Additions/Examples/ForceDrivenCharacter/force_driven_character_data.tres")
 
 ## Show debug data
 @export var debug: bool
@@ -57,7 +57,7 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	if Engine.is_editor_hint():
-		Vehicle._draw_exit_spots(self, occupant_info)
+		Vehicle._draw_data_spots(self, data)
 
 func _physics_process(delta: float) -> void:
 	if not Engine.is_editor_hint():

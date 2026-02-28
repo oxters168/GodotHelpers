@@ -18,8 +18,8 @@ class_name Car
 ## the percent max velocity it currently has, represented by the x-axis
 @export var accel_curve: Curve = preload("res://godot_helpers/Additions/Examples/CarPhysics/default_accel_curve.tres")
 
-## Info on occupying and being occupied
-@export var occupant_info: IOccupy = preload("res://godot_helpers/Additions/Physics/Vehicles/Extras/sedan_sports_occupant_info.tres")
+## Data regarding the vehicle (ex. occupancy)
+@export var data: VehicleData = preload("res://godot_helpers/Additions/Examples/CarPhysics/sedan_sports_data.tres")
 
 ## Whether to show debug info
 @export var debug: bool = false
@@ -39,7 +39,7 @@ func _ready() -> void:
 
 func _process(_delta: float) -> void:
 	if Engine.is_editor_hint():
-		Vehicle._draw_exit_spots(self, occupant_info)
+		Vehicle._draw_data_spots(self, data)
 
 func _physics_process(delta: float) -> void:
 	if not Engine.is_editor_hint():

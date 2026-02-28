@@ -30,8 +30,8 @@ class_name Helicopter
 ## The node to be spun for the tail blades as the helicopter rotates
 @export var tail_blades: Node3D
 
-## Info on occupying and being occupied
-@export var occupant_info: IOccupy = preload("res://godot_helpers/Additions/Physics/Vehicles/Extras/helicopter_occupant_info.tres")
+## Data regarding the vehicle (ex. occupancy)
+@export var data: VehicleData = preload("res://godot_helpers/Additions/Examples/Helicopter/helicopter_data.tres")
 
 ## Show debug info
 @export var debug: bool
@@ -67,7 +67,7 @@ func _ready() -> void:
 		add_child(Vehicle.new(self))
 func _process(_delta: float) -> void:
 	if Engine.is_editor_hint():
-		Vehicle._draw_exit_spots(self, occupant_info)
+		Vehicle._draw_data_spots(self, data)
 
 func _physics_process(delta: float) -> void:
 	if not Engine.is_editor_hint():

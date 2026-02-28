@@ -13,7 +13,7 @@ enum VehicleType {
 enum InputAxis {
 	VERTICAL_AXIS,   ## forward/backward
 	HORIZONTAL_AXIS, ## left/right
-  DRIVE_AXIS,      ## gas/brake
+	DRIVE_AXIS,      ## gas/brake
 	YAW_AXIS,        ## rotate left/right
 	PITCH_AXIS,      ## pitch forward/back
 	LIFT_AXIS,       ## lift strength
@@ -21,6 +21,7 @@ enum InputAxis {
 enum InputButton {
 	JUMP_BTN,
 	OCCUPY_BTN, ## enter/exit
+	ATTACH_BTN, ## attach/detach
 }
 
 var _vehicle: Node3D
@@ -34,13 +35,18 @@ var _no_vehicle_axis_warned: bool
 var _no_vehicle_btn_warned: bool
 var _no_cam_warned: bool
 
+var _tow_receive_spots: Array[Area3D] = []
+var _tow_joint: ConeTwistJoint3D = null
+
 var _prev_occupy_btn: bool
+var _prev_attach_btn: bool
 
 func _init(vehicle: Node3D) -> void:
 	_vehicle = vehicle
+	_create_tow_areas()
 
 func add_occupant(occupant: Vehicle) -> bool:
-	if _occupied_seats.size() < _vehicle.occupant_info.occupant_seats:
+	if _occupied_seats.size() < _vehicle.data.occupant_seats:
 		occupant._occupying = self
 		_occupied_seats.append(occupant)
 		occupant._vehicle.visible = false
@@ -50,7 +56,7 @@ func add_occupant(occupant: Vehicle) -> bool:
 		return false
 func remove_occupant(occupant: Vehicle) -> bool:
 	if _occupied_seats.has(occupant):
-		var exit_spots: Array[Vector3] = occupant._occupying._vehicle.occupant_info.exit_spots
+		var exit_spots: Array[Vector3] = occupant._occupying._vehicle.data.exit_spots
 		occupant._vehicle.global_position = occupant._occupying._vehicle.to_global(exit_spots[_occupied_seats.find(occupant)])
 		occupant._occupying = null
 		_occupied_seats.erase(occupant)
@@ -116,7 +122,7 @@ func set_input_button(input_btn: InputButton, value: bool) -> void:
 			if _occupying:
 				_occupying.remove_occupant(self)
 			else:
-				var results: Array[Dictionary] = PhysicsHelpers.intersect_sphere(global_bounds.get_center(), radius, get_world_3d(), false, true, 32, [_vehicle.get_rid()])
+				var results: Array[Dictionary] = PhysicsHelpers.intersect_sphere(global_bounds.get_center(), radius, get_world_3d(), false, true, 4294967295, 32, 0, [_vehicle.get_rid()])
 				var vehicle_to_occupy: Vehicle = null
 				for result in results:
 					vehicle_to_occupy = NodeHelpers.get_child_of_type(result["collider"], Vehicle)
@@ -124,11 +130,44 @@ func set_input_button(input_btn: InputButton, value: bool) -> void:
 						DebugDraw.set_text("Occupy", result["collider"])
 						break
 				if vehicle_to_occupy:
-					var can_occupy: int = _vehicle.occupant_info.can_occupy
+					var can_occupy: int = _vehicle.data.can_occupy
 					var other_type: VehicleType = vehicle_to_occupy.get_vehicle_type()
 					if (can_occupy & other_type) == other_type:
 						vehicle_to_occupy.add_occupant(self)
 		_prev_occupy_btn = value
+	if input_btn == InputButton.ATTACH_BTN:
+		if not value and _prev_attach_btn:
+			var current_vehicle: Vehicle = _occupying if _occupying else self
+			if current_vehicle._tow_joint:
+				current_vehicle._vehicle.get_parent().remove_child(current_vehicle._tow_joint)
+				current_vehicle._tow_joint.queue_free()
+				current_vehicle._tow_joint = null
+				print("Detached")
+			else:
+				for tow_pos: Vector3 in current_vehicle._vehicle.data.tow_give_spots:
+					var global_tow_pos: Vector3 = current_vehicle._vehicle.to_global(tow_pos)
+					DebugDraw.draw_circle_3d(global_tow_pos, CameraHelpers.get_active_camera_3d().global_basis.get_rotation_quaternion(), 0.5, Color.BLUE, 100)
+					var results: Array[Dictionary] = PhysicsHelpers.intersect_sphere(global_tow_pos, 0.5, get_world_3d(), true, false, 0x8000, 32, 0)
+					var vehicle_to_attach: Vehicle = null
+					for result in results:
+						var parent: Node3D = result["collider"].get_parent()
+						# since using the exclude in the intersect_sphere function does not seem to work with areas
+						if parent and parent != current_vehicle._vehicle:
+							vehicle_to_attach = NodeHelpers.get_child_of_type(parent, Vehicle)
+							if vehicle_to_attach:
+								DebugDraw.set_text("Attach", parent)
+								break
+					if vehicle_to_attach:
+						var tow_joint: ConeTwistJoint3D = ConeTwistJoint3D.new()
+						tow_joint.position = current_vehicle._vehicle.get_parent().to_local(current_vehicle._vehicle.to_global(tow_pos))
+						current_vehicle._vehicle.get_parent().add_child(tow_joint)
+						tow_joint.node_a = current_vehicle._vehicle.get_path()
+						tow_joint.node_b = vehicle_to_attach._vehicle.get_path()
+						current_vehicle._tow_joint = tow_joint
+						print(str("Attached to ", vehicle_to_attach._vehicle))
+						break
+
+		_prev_attach_btn = value
 	
 	var controlled_vehicle: Node3D = (_occupying._vehicle if _occupying else _vehicle)
 	if controlled_vehicle is ForceDrivenCharacter3D:
@@ -177,7 +216,31 @@ func _warn_btn(input_btn: InputButton) -> void:
 	if not _btns_warned.has(input_btn):
 		_btns_warned.append(input_btn)
 		push_warning(str(_vehicle.get_script().get_global_name(), " does not contain input button ", input_btn))
-static func _draw_exit_spots(parent: Node3D, occupant_info: IOccupy) -> void:
-	if occupant_info:
-		for exit_spot in occupant_info.exit_spots:
+
+func _create_tow_areas(radius: float = 0.5, mask: int = 0x8000) -> void:
+	# var sphere_mesh: SphereMesh = SphereMesh.new()
+	# sphere_mesh.radius = radius
+	var sphere_shape: SphereShape3D = SphereShape3D.new()
+	sphere_shape.radius = radius
+	for area_pos in _vehicle.data.tow_receive_spots:
+		# var debug_mesh: MeshInstance3D = MeshInstance3D.new()
+		# debug_mesh.mesh = sphere_mesh
+		var collider: CollisionShape3D = CollisionShape3D.new()
+		collider.shape = sphere_shape
+		var receive_spot: Area3D = Area3D.new()
+		receive_spot.position = area_pos
+		receive_spot.collision_layer = mask
+		receive_spot.collision_mask = mask
+		receive_spot.add_child(collider)
+		# receive_spot.add_child(debug_mesh)
+		_vehicle.add_child(receive_spot)
+		_tow_receive_spots.append(receive_spot)
+
+static func _draw_data_spots(parent: Node3D, vehicle_data: VehicleData) -> void:
+	if vehicle_data:
+		for exit_spot in vehicle_data.exit_spots:
 			DebugDraw.draw_cube(parent.to_global(exit_spot), 0.1, Color.RED)
+		for exit_spot in vehicle_data.tow_give_spots:
+			DebugDraw.draw_cube(parent.to_global(exit_spot), 0.1, Color.YELLOW)
+		for exit_spot in vehicle_data.tow_receive_spots:
+			DebugDraw.draw_cube(parent.to_global(exit_spot), 0.1, Color.GREEN)

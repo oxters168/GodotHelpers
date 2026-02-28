@@ -12,8 +12,8 @@ class_name SpeedBoat
 ## The max turn speed of the boat in radians per second
 @export var max_turn_speed: float = 2 * PI
 
-## Info on occupying and being occupied
-@export var occupant_info: IOccupy = preload("res://godot_helpers/Additions/Physics/Vehicles/Extras/speed_boat_occupant_info.tres")
+## Data regarding the vehicle (ex. occupancy)
+@export var data: VehicleData = preload("res://godot_helpers/Additions/Examples/SpeedBoat/speed_boat_data.tres")
 
 ## Show debug data
 @export var debug: bool = false
@@ -29,7 +29,7 @@ func _ready() -> void:
 		add_child(Vehicle.new(self))
 func _process(_delta: float) -> void:
 	if Engine.is_editor_hint():
-		Vehicle._draw_exit_spots(self, occupant_info)
+		Vehicle._draw_data_spots(self, data)
 
 func _physics_process(delta: float) -> void:
 	if not Engine.is_editor_hint():
