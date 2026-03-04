@@ -15,8 +15,8 @@ static func get_parent_of_type(current: Node, type, include_self = true):
 		return get_parent_of_type(check_par, type, false)
 	else:
 		return null
-## Goes down the node tree until it finds a parent of the given type and returns it
-## Returns null if a parent of the given type cannot be found
+## Goes down the node tree until it finds a child of the given type and returns it
+## Returns null if a child of the given type cannot be found
 static func get_child_of_type(current: Node, child_type, include_self = true, include_all_descendants = true):
 	if include_self and is_instance_of(current, child_type):
 		return current

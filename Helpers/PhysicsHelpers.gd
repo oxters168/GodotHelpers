@@ -26,13 +26,33 @@ static func intersect_sphere(
 	query.shape_rid = shape_rid
 	query.transform = Transform3D(Basis.IDENTITY, position)
 	var results: Array[Dictionary] = space_state.intersect_shape(query, max_results)
-	# var vehicle: Vehicle = null
-	# for result in results:
-	# 	vehicle = NodeHelpers.get_child_of_type(result["collider"], Vehicle)
-	# 	if vehicle:
-	# 		DebugDraw.set_text("Occupy", result["collider"])
-	# 		break
-	# DebugDraw.draw_circle_3d(_vehicle.position, CameraHelpers.get_active_camera_3d().global_basis.get_rotation_quaternion(), radius, Color.GREEN if vehicle else Color.RED)
+	return results
+## Checks the intersections of a box against the space of the given [World3D]. The intersected shapes are returned in an array
+## containing dictionaries with the following fields: collider: The colliding object. collider_id: The colliding object's ID. rid: The intersecting object's RID.
+## shape: The shape index of the colliding shape. The number of intersections can be limited with the max_results parameter, to reduce the processing time.
+static func intersect_box(
+	position: Vector3,
+	size: Vector3,
+	world: World3D,
+	collide_with_areas: bool = true,
+	collide_with_bodies: bool = true,
+	collision_mask: int = 4294967295,
+	max_results: int = 32,
+	margin: float = 0,
+	exclude: Array[RID] = [],
+) -> Array[Dictionary]:
+	var space_state: PhysicsDirectSpaceState3D = world.direct_space_state
+	var query: PhysicsShapeQueryParameters3D = PhysicsShapeQueryParameters3D.new()
+	query.collide_with_areas = collide_with_areas
+	query.collide_with_bodies = collide_with_bodies
+	query.exclude = exclude
+	query.collision_mask = collision_mask
+	query.margin = margin
+	var shape_rid = PhysicsServer3D.box_shape_create()
+	PhysicsServer3D.shape_set_data(shape_rid, size / 2)
+	query.shape_rid = shape_rid
+	query.transform = Transform3D(Basis.IDENTITY, position)
+	var results: Array[Dictionary] = space_state.intersect_shape(query, max_results)
 	return results
 
 ## Gets the velocity of the given rigidbody at the given global position
