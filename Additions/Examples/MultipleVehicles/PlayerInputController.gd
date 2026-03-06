@@ -9,7 +9,9 @@ func _process(_delta: float) -> void:
 	var vehicle: Vehicle
 	if target:
 		vehicle = NodeHelpers.get_child_of_type(target, Vehicle)
-		if vehicle:
+		var dialogic = ScriptHelpers.get_global_autoload("Dialogic")
+		var is_dialogic_timeline_running: bool = dialogic and dialogic.current_timeline != null
+		if vehicle and not is_dialogic_timeline_running:
 			vehicle.set_input_axis(Vehicle.InputAxis.VERTICAL_AXIS, Input.get_axis("move_ver_neg", "move_ver_pos"))
 			vehicle.set_input_axis(Vehicle.InputAxis.HORIZONTAL_AXIS, Input.get_axis("move_hor_neg", "move_hor_pos"))
 			vehicle.set_input_axis(Vehicle.InputAxis.DRIVE_AXIS, Input.get_axis("brake", "gas"))
