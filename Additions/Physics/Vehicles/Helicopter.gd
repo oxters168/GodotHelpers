@@ -133,6 +133,7 @@ func _physics_process(delta: float) -> void:
 				var angular_velocity_in_tilt: float = angular_velocity.dot(tilt_axis)
 				var tilt_accel: float = (tilt_angle_offset * tilt_strength) - (angular_velocity_in_tilt * tilt_damp)
 				var tilt_torque: Vector3 = _power * rot_inertia.length() * (tilt_axis * tilt_accel)
+        # remove yaw axis torque
 				tilt_torque -= global_up * tilt_torque.dot(global_up)
 				_orientation_debug.global_basis = target_basis
 				apply_torque(tilt_torque)

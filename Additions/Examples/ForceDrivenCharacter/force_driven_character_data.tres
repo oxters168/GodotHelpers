@@ -4,5 +4,5 @@
 
 [resource]
 script = ExtResource("1_yw2f7")
-can_occupy = 14
+can_occupy = 30
 metadata/_custom_type_script = "uid://dj6jplkfgd8io"

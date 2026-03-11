@@ -17,7 +17,7 @@ func _process(_delta: float) -> void:
 			vehicle.set_input_axis(Vehicle.InputAxis.DRIVE_AXIS, Input.get_axis("brake", "gas"))
 			vehicle.set_input_axis(Vehicle.InputAxis.YAW_AXIS, Input.get_axis("move_lat_neg", "move_lat_pos"))
 			vehicle.set_input_axis(Vehicle.InputAxis.PITCH_AXIS, Input.get_axis("move_ver_neg", "move_ver_pos"))
-			vehicle.set_input_axis(Vehicle.InputAxis.LIFT_AXIS, Input.get_action_strength("lift"))
+			vehicle.set_input_axis(Vehicle.InputAxis.LIFT_AXIS, Input.get_axis("drop", "lift"))
 			vehicle.set_input_button(Vehicle.InputButton.JUMP_BTN, Input.is_action_pressed("jump"))
 			vehicle.set_input_button(Vehicle.InputButton.OCCUPY_BTN, Input.is_action_pressed("occupy"))
 			vehicle.set_input_button(Vehicle.InputButton.ATTACH_BTN, Input.is_action_pressed("attach"))

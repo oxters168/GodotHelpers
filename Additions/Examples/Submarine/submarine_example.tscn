@@ -1,0 +1,40 @@
+[gd_scene format=3 uid="uid://k4ifpd0qamr4"]
+
+[ext_resource type="Script" uid="uid://80g44032yl8n" path="res://godot_helpers/Additions/Examples/MultipleVehicles/PlayerInputController.gd" id="1_k661d"]
+[ext_resource type="Script" uid="uid://dvt5sxxkp8els" path="res://godot_helpers/Additions/Cameras/OrbitCamera.gd" id="2_i071y"]
+[ext_resource type="PackedScene" uid="uid://biwymagknwy7h" path="res://godot_helpers/Additions/Examples/Submarine/submarine.tscn" id="3_1v7k8"]
+[ext_resource type="Script" uid="uid://c3lnywjnhjww4" path="res://godot_helpers/Additions/Physics/Ocean.gd" id="5_tvk8h"]
+
+[node name="Node3D" type="Node3D" unique_id=1206301656]
+
+[node name="PlayerInputController" type="Node3D" parent="." unique_id=465663226 node_paths=PackedStringArray("target", "camera")]
+script = ExtResource("1_k661d")
+target = NodePath("../Submarine")
+camera = NodePath("../OrbitCamera")
+metadata/_custom_type_script = "uid://80g44032yl8n"
+
+[node name="OrbitCamera" type="Camera3D" parent="." unique_id=101763231 node_paths=PackedStringArray("target")]
+script = ExtResource("2_i071y")
+target = NodePath("../Submarine")
+limit_angle = false
+look_input_enabled = false
+mouse_input_enabled = true
+metadata/_custom_type_script = "uid://dvt5sxxkp8els"
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="." unique_id=2010214075]
+transform = Transform3D(0.70710677, 0.43045932, -0.5609855, 0, 0.7933533, 0.6087614, 0.70710677, -0.43045932, 0.5609855, 0, 20, 0)
+
+[node name="Submarine" parent="." unique_id=1275810389 instance=ExtResource("3_1v7k8")]
+max_lift_speed = 3.0
+debug = true
+
+[node name="Ocean" type="Node3D" parent="." unique_id=824312885 node_paths=PackedStringArray("target")]
+script = ExtResource("5_tvk8h")
+target = NodePath("../Submarine")
+tile_distance = 2
+debug = true
+linear_damp_space_override = 3
+linear_damp = 1.4
+angular_damp_space_override = 3
+angular_damp = 1.4
+metadata/_custom_type_script = "uid://c3lnywjnhjww4"

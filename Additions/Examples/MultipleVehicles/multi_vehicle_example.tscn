@@ -8,6 +8,7 @@
 [ext_resource type="PackedScene" uid="uid://mak4knq63oq7" path="res://godot_helpers/Additions/Examples/ForceDrivenCharacter/female_b_2.tscn" id="6_x46eg"]
 [ext_resource type="PackedScene" uid="uid://bpcyik8syld8o" path="res://godot_helpers/Additions/Examples/Helicopter/helicopter.tscn" id="7_brkes"]
 [ext_resource type="PackedScene" uid="uid://cmb7h0qob7ej2" path="res://godot_helpers/Additions/Examples/SpeedBoat/speed_boat.tscn" id="8_eqvcw"]
+[ext_resource type="PackedScene" uid="uid://biwymagknwy7h" path="res://godot_helpers/Additions/Examples/Submarine/submarine.tscn" id="9_s4ro4"]
 
 [sub_resource type="BoxShape3D" id="BoxShape3D_oo3x0"]
 size = Vector3(6, 1, 6)
@@ -91,3 +92,7 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5, 0.5, 0)
 [node name="SpeedBoat" parent="." unique_id=1884655739 instance=ExtResource("8_eqvcw")]
 transform = Transform3D(1, 0, 0, 0, 1.0000002, 0, 0, 0, 1.0000001, 13, 0, 0)
 collision_mask = 3
+
+[node name="Submarine" parent="." unique_id=1275810389 instance=ExtResource("9_s4ro4")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 20, 0, 0)
+debug = true

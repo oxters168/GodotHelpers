@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://biwymagknwy7h"]
+
+[ext_resource type="Script" uid="uid://ci7npgvw68qdh" path="res://godot_helpers/Additions/Physics/Vehicles/Submarine.gd" id="1_kwjds"]
+[ext_resource type="Resource" uid="uid://bory68bfd3wbt" path="res://godot_helpers/Additions/Examples/Submarine/submarine_data.tres" id="2_m78ru"]
+[ext_resource type="PackedScene" uid="uid://dwq2rxgwewpbp" path="res://godot_helpers/Additions/Examples/Assets/asset_forge_deluxe/submarine/submarine.glb" id="2_mv0oq"]
+
+[sub_resource type="ConvexPolygonShape3D" id="ConvexPolygonShape3D_m78ru"]
+points = PackedVector3Array(-0.34048983, 0.29285717, 0.8531913, 0.6173246, 0.6180879, -0.89409506, 0.6173246, 0.50577295, -0.89409506, -0.6186092, 0.46837127, -1.1188717, -0.4024994, 0.99750054, 0.5487067, 0.29919487, 0.01396471, 0.5912134, 0.40808702, 0.86296624, 0.775186, 0.055382535, 1.1050793, -1.1188717, -0.2887236, 0.03452034, -0.4572459, 0.08329508, 0.34149745, -1.295506, 0.32648358, 0.026483595, -0.39216968, -0.4763887, 0.19079629, 0.590546, 0.4018178, 0.9981822, 0.54986006, 0.4775847, 0.2245193, 0.63008034, -0.39322734, 0.98701787, -0.42469347, -0.43991682, 0.85940886, 0.728882, 0.23234688, 0.32810023, 0.92695075, -0.30008903, 0.014452796, 0.5904652, 0.6173246, 0.50577295, -1.1188717, -0.19704801, 0.7575008, 0.9229616, 0.392447, 0.98758787, -0.42495635, -0.11920982, 0.6786336, -1.3043624, -0.6186092, 0.5804662, -0.89409506, 0.47187266, 0.9281273, 0.5499878, 0.6173246, 0.6180879, -1.1188717, -0.23289429, 0.11417364, 0.8166228, -0.59999996, 0.5793432, -1.0918034, -0.4724552, 0.9275448, 0.5488089, 0.15201443, 0.6448672, -1.3062098, 0.464406, 0.164406, -0.39219272, -0.084428996, 0.34185937, -1.2935759, -0.05678808, 1.1050793, -0.8565541)
+
+[node name="Submarine" type="RigidBody3D" unique_id=1275810389]
+mass = 80.0
+center_of_mass_mode = 1
+script = ExtResource("1_kwjds")
+data = ExtResource("2_m78ru")
+linear_damp_override = 1
+submerged_linear_damp = 1.4
+angular_damp_override = 1
+submerged_angular_damp = 1.4
+metadata/_custom_type_script = "uid://ci7npgvw68qdh"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="." unique_id=1450699283]
+shape = SubResource("ConvexPolygonShape3D_m78ru")
+
+[node name="submarine" parent="." unique_id=1000121414 instance=ExtResource("2_mv0oq")]

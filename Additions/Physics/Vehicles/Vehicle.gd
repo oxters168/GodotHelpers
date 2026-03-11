@@ -9,6 +9,7 @@ enum VehicleType {
 	CAR = 0x2,
 	SPEED_BOAT = 0x4,
 	HELICOPTER = 0x8,
+	SUBMARINE = 0x10,
 }
 enum InputAxis {
 	VERTICAL_AXIS,   ## forward/backward
@@ -105,6 +106,16 @@ func set_input_axis(input_axis: InputAxis, value: float) -> void:
 				helicopter.input_rot = value
 			InputAxis.LIFT_AXIS:
 				helicopter.input_lift = value
+			_: _warn_axis(input_axis)
+	elif controlled_vehicle is Submarine:
+		var submarine: Submarine = controlled_vehicle as Submarine
+		match input_axis:
+			InputAxis.VERTICAL_AXIS:
+				submarine.input_drive = value
+			InputAxis.HORIZONTAL_AXIS:
+				submarine.input_rot = value
+			InputAxis.LIFT_AXIS:
+				submarine.input_lift = value
 			_: _warn_axis(input_axis)
 	else:
 		if not _no_vehicle_axis_warned:
@@ -205,6 +216,8 @@ func get_vehicle_type() -> VehicleType:
 		return VehicleType.SPEED_BOAT
 	elif _vehicle is Helicopter:
 		return VehicleType.HELICOPTER
+	elif _vehicle is Submarine:
+		return VehicleType.SUBMARINE
 	else:
 		return VehicleType.NONE
 

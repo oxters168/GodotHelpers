@@ -12,7 +12,7 @@ enum DampOverrideMode {
     MULTIPLY        ## Multiply current damp
 }
 
-## The world height of the water plane, if you'd like non-planar water then set getWaterDisplacementAt in script
+## The world height of the water plane
 @export var waterLevel: float = 0
 ## Returns the difference between the given point's height and the water height at that point as a float.
 ## If not set, will use the waterLevel variable.

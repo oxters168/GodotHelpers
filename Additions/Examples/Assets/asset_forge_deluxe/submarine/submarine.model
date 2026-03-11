@@ -1,0 +1,16 @@
+# Made using Asset Forge (2.5.3)
+
+:materials
+
+[name:metalPurple;color:RGBA(0.498, 0.404, 0.933, 1.000);scale:(1.00, 1.00);shader:Default;mapping:0;valueA:0.35;valueB:0;]
+[name:shield;color:RGBA(0.180, 0.196, 0.259, 1.000);scale:(1.00, 1.00);shader:Default;mapping:0;valueA:0.35;valueB:0.35;]
+[name:_defaultMat;color:RGBA(0.939, 0.953, 1.000, 1.000);scale:(1.00, 1.00);shader:Default;mapping:0;valueA:0.35;valueB:0.25;]
+
+:models
+
+[name:;collection:Aircraft;type:hull_body;position:(0.0000, 0.0000, 0.0500);rotation:(0.0000, 0.0000, 0.0000);scale:(1.0000, 1.0000, 0.7000);group:;locked:False;hidden:False;materials:metalPurple+_defaultMat;]
+[name:;collection:Aircraft;type:hull_cockpitRound%;position:(0.0000, 0.0000, -0.6300);rotation:(0.0000, 180.0000, 0.0000);scale:(1.0000, 1.0000, 0.6600);group:;locked:False;hidden:False;materials:shield+_defaultMat+metalPurple;]
+[name:;collection:Aircraft;type:hull_frontPoint;position:(0.0000, 0.0000, 0.9000);rotation:(0.0000, 0.0000, 0.0000);scale:(1.0000, 1.0000, 1.0000);group:;locked:False;hidden:False;materials:_defaultMat+metalPurple;]
+[name:;collection:Aircraft;type:wing_point;position:(0.4000, 0.6000, 1.0000);rotation:(0.0000, 0.0000, 180.0000);scale:(0.4000, 0.4000, 0.4000);group:;locked:False;hidden:False;materials:_defaultMat+metalPurple;]
+[name:;collection:Aircraft;type:wing_point;position:(-0.4000, 0.5000, 1.0000);rotation:(0.0000, 0.0000, 0.0000);scale:(0.4000, 0.4000, 0.4000);group:;locked:False;hidden:False;materials:_defaultMat+metalPurple;]
+[name:;collection:Aircraft;type:wing_point;position:(-0.0500, 0.9000, 1.0000);rotation:(0.0000, 0.0000, 270.0000);scale:(0.4000, 0.4000, 0.4000);group:;locked:False;hidden:False;materials:_defaultMat+metalPurple;]
