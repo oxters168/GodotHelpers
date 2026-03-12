@@ -13,9 +13,9 @@ enum DampOverrideMode {
 }
 
 ## The world height of the water plane
-@export var waterLevel: float = 0
+@export var water_level: float = 0
 ## Returns the difference between the given point's height and the water height at that point as a float.
-## If not set, will use the waterLevel variable.
+## If not set, will use the water_level variable.
 # var getWaterDisplacementAt: Callable # Vector3 -> float
 
 signal on_submerged(obj: RigidBody3D)
@@ -139,8 +139,8 @@ func _on_emerged() -> void:
 	on_emerged.emit(_floater)
 
 func get_water_displacement_at(pos: Vector3) -> float:
-	return pos.y - waterLevel
-	# return getWaterDisplacementAt.call(pos) if getWaterDisplacementAt != null else pos.y - waterLevel
+	return pos.y - water_level
+	# return getWaterDisplacementAt.call(pos) if getWaterDisplacementAt != null else pos.y - water_level
 
 ## Checks if the object is underwater using the y-positions of the corners of the bounds that encapsulates all the child colliders
 func is_underwater():

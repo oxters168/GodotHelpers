@@ -123,11 +123,11 @@ func _physics_process(delta: float) -> void:
 			_current_lift_speed = clampf(_current_lift_speed + lift_accel * delta * input_lift, -max_lift_speed, max_lift_speed)
 		else:
 			_current_lift_speed = sign(_current_lift_speed) * max(abs(_current_lift_speed - lift_decel * delta * sign(_current_lift_speed)), 0)
-		if _current_lift_speed > 0 and _buoyancy.waterLevel >= waterLevel:
+		if _current_lift_speed > 0 and _buoyancy.water_level >= waterLevel:
 			_current_lift_speed = 0
-		if _current_lift_speed < 0 and _buoyancy.waterLevel <= waterLevel - maxDepth:
+		if _current_lift_speed < 0 and _buoyancy.water_level <= waterLevel - maxDepth:
 			_current_lift_speed = 0
-		_buoyancy.waterLevel = clampf(_buoyancy.waterLevel + _current_lift_speed * delta, waterLevel - maxDepth, waterLevel)
+		_buoyancy.water_level = clampf(_buoyancy.water_level + _current_lift_speed * delta, waterLevel - maxDepth, waterLevel)
 
 		# tilt & yaw torque
 		var direct_state: PhysicsDirectBodyState3D = PhysicsServer3D.body_get_direct_state(self)
@@ -177,4 +177,4 @@ func _physics_process(delta: float) -> void:
 		apply_force(forward_force)
 
 		if debug:
-			DebugDraw.set_text(str(self), str("waterLevel: ", _buoyancy.waterLevel, " velocity: ", forward_velocity))
+			DebugDraw.set_text(str(self), str("waterLevel: ", _buoyancy.water_level, " velocity: ", forward_velocity))
